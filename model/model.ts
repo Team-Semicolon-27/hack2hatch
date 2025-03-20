@@ -85,7 +85,8 @@ export interface Notion extends Document {
   description: string;
   members: mongoose.Schema.Types.ObjectId[];
   mentors: mongoose.Schema.Types.ObjectId[];
-  blogs: mongoose.Schema.Types.ObjectId[];
+  blogsE: mongoose.Schema.Types.ObjectId[];
+  blogsM: mongoose.Schema.Types.ObjectId[];
   teamMembers: mongoose.Schema.Types.ObjectId[];
 }
 
@@ -97,13 +98,14 @@ const NotionSchema: Schema<Notion> = new Schema(
     description: { type: String, required: true },
     members: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
     mentors: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
-    blogs: [{ type: Schema.Types.ObjectId, ref: "Blog" }],
+    blogsE: [{ type: Schema.Types.ObjectId, ref: "BlogE" }],
     teamMembers: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
+    blogsM: [{ type: Schema.Types.ObjectId, ref: "BlogM" }],
   },
   { timestamps: true }
 );
 
-export interface Blog extends Document {
+export interface BlogE extends Document {
   author: mongoose.Schema.Types.ObjectId;
   notionId: mongoose.Schema.Types.ObjectId;
   title: string;
@@ -115,9 +117,9 @@ export interface Blog extends Document {
   tags: string[];
 }
 
-const BlogSchema: Schema<Blog> = new Schema(
+const BlogESchema: Schema<BlogE> = new Schema(
   {
-    author: { type: Schema.Types.ObjectId, ref: "Entrepreneur", required: true },
+    author: { type: Schema.Types.ObjectId, ref: "Entrepreneur" },
     notionId: { type: Schema.Types.ObjectId, ref: "Notion", required: true },
     title: { type: String, required: true },
     content: { type: String, required: true },
@@ -135,6 +137,40 @@ const BlogSchema: Schema<Blog> = new Schema(
   },
   { timestamps: true }
 );
+
+export interface BlogM extends Document {
+  author: mongoose.Schema.Types.ObjectId;
+  notionId: mongoose.Schema.Types.ObjectId;
+  title: string;
+  content: string;
+  attachments: string[];
+  likes: mongoose.Schema.Types.ObjectId[];
+  comments: mongoose.Schema.Types.ObjectId[];
+  links: string[];
+  tags: string[];
+}
+
+const BlogMSchema: Schema<BlogM> = new Schema(
+  {
+    author: { type: Schema.Types.ObjectId, ref: "Mentor" },
+    notionId: { type: Schema.Types.ObjectId, ref: "Notion", required: true },
+    title: { type: String, required: true },
+    content: { type: String, required: true },
+    attachments: [{ type: String }],
+    likes: [
+      {
+        user: { type: Schema.Types.ObjectId, required: true, refPath: "likes.userType" },
+        userType: { type: String, enum: ["Entrepreneur", "Mentor"], required: true },
+      },
+    ],
+    
+    comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
+    links: [{ type: String }],
+    tags: [{ type: String }],
+  },
+  { timestamps: true }
+);
+
 
 export interface Comment extends Document {
   author: mongoose.Schema.Types.ObjectId;
@@ -166,8 +202,11 @@ export const MentorModel: Model<Mentor> =
 export const NotionModel: Model<Notion> =
   mongoose.models.Notion || mongoose.model<Notion>("Notion", NotionSchema);
 
-export const BlogModel: Model<Blog> =
-  mongoose.models.Blog || mongoose.model<Blog>("Blog", BlogSchema);
+export const BlogEModel: Model<BlogE> =
+  mongoose.models.BlogE || mongoose.model<BlogE>("BlogE", BlogESchema);
+
+export const BlogMModel: Model<BlogM> =
+  mongoose.models.BlogM || mongoose.model<BlogM>("BlogM", BlogMSchema);
 
 export const CommentModel: Model<Comment> =
   mongoose.models.Comment || mongoose.model<Comment>("Comment", CommentSchema);
