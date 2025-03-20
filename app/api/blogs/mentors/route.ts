@@ -51,7 +51,7 @@ export async function POST(req: Request) {
         success: true, 
         message: 'Blog created successfully', 
         data: blog 
-      }, { status: 201 });
+      }, { status: 200 });
     } catch (error) {
       console.error('Error creating blog:', error);
       return NextResponse.json({ 

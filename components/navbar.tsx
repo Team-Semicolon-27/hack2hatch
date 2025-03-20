@@ -73,7 +73,9 @@ export default function Navbar() {
   
   if (!session) {
     return <NavbarGuest />;
+    return <NavbarGuest />;
   }
+  
   
   return (
     <nav 
