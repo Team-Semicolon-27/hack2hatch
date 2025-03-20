@@ -39,11 +39,41 @@ const EntrepreneurSchema: Schema<Entrepreneur> = new Schema(
   { timestamps: true }
 );
 
-export interface Mentor extends Entrepreneur {}
+export interface Mentor extends Document {
+  username: string;
+  name: string;
+  email: string;
+  password: string;
+  profileImage: string;
+  isVerified: boolean;
+  verificationCode: string;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+  notionsOwnerOf: mongoose.Schema.Types.ObjectId[];
+  notionsPartOf: mongoose.Schema.Types.ObjectId[];
+  followers: mongoose.Schema.Types.ObjectId[];
+  followings: mongoose.Schema.Types.ObjectId[];
+  mFollowers: mongoose.Schema.Types.ObjectId[];
+  mFollowings: mongoose.Schema.Types.ObjectId[];
+}
 
 const MentorSchema: Schema<Mentor> = new Schema(
   {
-    ...EntrepreneurSchema.obj,
+    username: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    profileImage: { type: String, required: true },
+    isVerified: { type: Boolean, default: false },
+    verificationCode: { type: String, required: true },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
+    notionsOwnerOf: [{ type: Schema.Types.ObjectId, ref: "Notion" }],
+    notionsPartOf: [{ type: Schema.Types.ObjectId, ref: "Notion" }],
+    followers: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
+    followings: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
+    mFollowers: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
+    mFollowings: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
   },
   { timestamps: true }
 );
@@ -68,7 +98,7 @@ const NotionSchema: Schema<Notion> = new Schema(
     members: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
     mentors: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
     blogs: [{ type: Schema.Types.ObjectId, ref: "Blog" }],
-    teamMembers: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }, { type: Schema.Types.ObjectId, ref: "Mentor" }],
+    teamMembers: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
   },
   { timestamps: true }
 );
@@ -92,7 +122,13 @@ const BlogSchema: Schema<Blog> = new Schema(
     title: { type: String, required: true },
     content: { type: String, required: true },
     attachments: [{ type: String }],
-    likes: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }, { type: Schema.Types.ObjectId, ref: "Mentor" }],
+    likes: [
+      {
+        user: { type: Schema.Types.ObjectId, required: true, refPath: "likes.userType" },
+        userType: { type: String, enum: ["Entrepreneur", "Mentor"], required: true },
+      },
+    ],
+    
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     links: [{ type: String }],
     tags: [{ type: String }],
@@ -110,7 +146,13 @@ const CommentSchema: Schema<Comment> = new Schema(
   {
     author: { type: Schema.Types.ObjectId, ref: "Entrepreneur", required: true },
     content: { type: String, required: true },
-    likes: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }, { type: Schema.Types.ObjectId, ref: "Mentor" }],
+    likes: [
+      {
+        user: { type: Schema.Types.ObjectId, required: true, refPath: "likes.userType" },
+        userType: { type: String, enum: ["Entrepreneur", "Mentor"], required: true },
+      },
+    ],
+    
   },
   { timestamps: true }
 );
