@@ -218,6 +218,28 @@ const NewsSchema: Schema<News> = new Schema(
   { timestamps: true }
 );
 
+
+export interface Message extends Document {
+  sender: string;
+  receiver: string;
+  content: string;
+  timestamp: Date;
+}
+
+const MessageSchema: Schema<Message> = new Schema(
+  {
+    sender: { type: String, required: true },
+    receiver: { type: String, required: true },
+    content: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+  },
+  { timestamps: true }
+);
+
+export const MessageModel: Model<Message> =
+  mongoose.models.Message || mongoose.model<Message>("Message", MessageSchema);
+
+
 export const NewsModel: Model<News> =
   mongoose.models.News || mongoose.model<News>("News", NewsSchema);
 
