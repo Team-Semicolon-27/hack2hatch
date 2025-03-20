@@ -51,11 +51,33 @@ export default function NotionDetailsPage() {
     fetchNotion();
   }, [id]);
   
-  const handleAction = async (action: string) => {
+  const handleJoin = async () => {
     try {
-      const res = await axios.post(`/api/notions/${id}/${action}`);
+      const res = await axios.patch(`/api/entrepreneur/notions/join/${id}`);
       if (res.status === 200) {
         router.refresh();
+      }
+    } catch (error) {
+      console.error("Error performing action:", error);
+    }
+  };
+  
+  const handleLeave = async () => {
+    try {
+      const res = await axios.patch(`/api/entrepreneur/notions/leave/${id}`);
+      if (res.status === 200) {
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Error performing action:", error);
+    }
+  }
+  
+  const handleDelete = async () => {
+    try {
+      const res = await axios.post(`/api/entrepreneur/notions/${id}`);
+      if (res.status === 200) {
+        router.push('/my-notions');
       }
     } catch (error) {
       console.error("Error performing action:", error);
@@ -110,15 +132,15 @@ export default function NotionDetailsPage() {
         
         <div className="mt-6 flex gap-4">
           {notion.isOwner ? (
-            <button onClick={() => handleAction("delete")} className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">
+            <button onClick={() => handleDelete()} className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">
               Delete Notion
             </button>
           ) : notion.isMentor || notion.isMember || notion.isTeamMember ? (
-            <button onClick={() => handleAction("leave")} className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg font-semibold">
+            <button onClick={() => handleLeave()} className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg font-semibold">
               Leave Notion
             </button>
           ) : (
-            <button onClick={() => handleAction("join")} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-semibold">
+            <button onClick={() => handleJoin()} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-semibold">
               Join Notion
             </button>
           )}
