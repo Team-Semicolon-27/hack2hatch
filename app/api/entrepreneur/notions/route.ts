@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "no user found" }, { status: 401});
     }
     
-    if (user.userType !== "profile") {
+    if (user.userType !== "entrepreneur") {
       return NextResponse.json({ error: "user is not profile"}, { status: 401 })
     }
     

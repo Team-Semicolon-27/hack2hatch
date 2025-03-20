@@ -75,7 +75,7 @@ export default function NotionDetailsPage() {
   
   const handleDelete = async () => {
     try {
-      const res = await axios.post(`/api/entrepreneur/notions/${id}`);
+      const res = await axios.delete(`/api/entrepreneur/notions/${id}`);
       if (res.status === 200) {
         router.push('/my-notions');
       }
