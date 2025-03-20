@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { EntrepreneurModel, MentorModel } from "@/model/model";
 import connectDB from "@/lib/db";
 
-const authOptions = {
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
