@@ -193,6 +193,30 @@ const CommentSchema: Schema<Comment> = new Schema(
   { timestamps: true }
 );
 
+export interface News extends Document {
+  platform: string;
+  title: string;
+  type: string;
+  content: string;
+  url: string;
+  timestamp: Date;
+}
+
+const NewsSchema: Schema<News> = new Schema(
+  {
+    platform: { type: String, required: true },
+    title: { type: String, required: true },
+    type: { type: String, required: true },
+    content: { type: String, required: true },
+    url: { type: String, required: true },
+    timestamp: { type: Date, required: true },
+  },
+  { timestamps: true }
+);
+
+export const NewsModel: Model<News> =
+  mongoose.models.News || mongoose.model<News>("News", NewsSchema);
+
 export const EntrepreneurModel: Model<Entrepreneur> =
   mongoose.models.Entrepreneur || mongoose.model<Entrepreneur>("Entrepreneur", EntrepreneurSchema);
 

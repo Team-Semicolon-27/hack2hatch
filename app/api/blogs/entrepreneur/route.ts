@@ -1,6 +1,6 @@
 import mongoose, { mongo } from "mongoose";
 import {NextResponse} from "next/server";
-import { BlogE, BlogEModel } from "../../../../model/model";
+import { BlogE, BlogEModel, NotionModel } from "../../../../model/model";
 import { EntrepreneurModel } from "../../../../model/model";
 import connectDB from "@/lib/db"
 import { getServerSession, User } from "next-auth";
@@ -100,6 +100,15 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ error: 'Unauthorized. User must be logged in.' }, { status: 401 });
       }
 
+      const b = await BlogEModel.findOne({ _id: id, author: user.id });
+      if(!b) {
+        return NextResponse.json({ error: 'Unauthorized. User cannot delete another user\'s blog post.' }, { status: 401 });
+      }
+      const notion = await NotionModel.findOne({ _id: b.notionId });
+
+      if(notion) {
+        await NotionModel.deleteOne({ _id: b.notionId });
+      }
       const blog = await BlogEModel.findOneAndDelete({ _id: id, author: user.id });
 
       if(!blog) {
