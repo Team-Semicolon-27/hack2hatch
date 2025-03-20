@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import User from "@/lib/models/User";
 import connectDB from "@/lib/db";
 
-const authOptions = {
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",

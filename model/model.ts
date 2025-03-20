@@ -14,8 +14,8 @@ export interface Entrepreneur extends Document {
   notionsPartOf: mongoose.Schema.Types.ObjectId[];
   followers: mongoose.Schema.Types.ObjectId[];
   followings: mongoose.Schema.Types.ObjectId[];
-  mFollowers: mongoose.Schema.Types.ObjectId[];
-  mFollowings: mongoose.Schema.Types.ObjectId[];
+  mentorFollowers: mongoose.Schema.Types.ObjectId[];
+  mentorFollowings: mongoose.Schema.Types.ObjectId[];
 }
 
 const EntrepreneurSchema: Schema<Entrepreneur> = new Schema(
@@ -33,8 +33,8 @@ const EntrepreneurSchema: Schema<Entrepreneur> = new Schema(
     notionsPartOf: [{ type: Schema.Types.ObjectId, ref: "Notion" }],
     followers: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
     followings: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
-    mFollowers: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
-    mFollowings: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
+    mentorFollowers: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
+    mentorFollowings: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
   },
   { timestamps: true }
 );
@@ -53,8 +53,8 @@ export interface Mentor extends Document {
   notionsPartOf: mongoose.Schema.Types.ObjectId[];
   followers: mongoose.Schema.Types.ObjectId[];
   followings: mongoose.Schema.Types.ObjectId[];
-  mFollowers: mongoose.Schema.Types.ObjectId[];
-  mFollowings: mongoose.Schema.Types.ObjectId[];
+  mentorFollowers: mongoose.Schema.Types.ObjectId[];
+  mentorFollowings: mongoose.Schema.Types.ObjectId[];
 }
 
 const MentorSchema: Schema<Mentor> = new Schema(
@@ -72,8 +72,8 @@ const MentorSchema: Schema<Mentor> = new Schema(
     notionsPartOf: [{ type: Schema.Types.ObjectId, ref: "Notion" }],
     followers: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
     followings: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
-    mFollowers: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
-    mFollowings: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
+    mentorFollowers: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
+    mentorFollowings: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
   },
   { timestamps: true }
 );
