@@ -1,6 +1,6 @@
 import mongoose, { mongo } from "mongoose";
 import {NextResponse} from "next/server";
-import { BlogM, BlogMModel } from "../../../../model/model";
+import { BlogM, BlogMModel, NotionModel } from "../../../../model/model";
 import { EntrepreneurModel } from "../../../../model/model";
 import connectDB from "@/lib/db"
 import { getServerSession, User } from "next-auth";
@@ -104,6 +104,16 @@ export async function DELETE(req: Request) {
 
       if(!blog) {
         return NextResponse.json({ error: 'Failed to delete blog post' }, { status: 500 });
+      }
+
+      const b = await BlogMModel.findOne({ _id: id, author: user.id });
+      if(!b) {
+        return NextResponse.json({ error: 'Unauthorized. User cannot delete another user\'s blog post.' }, { status: 401 });
+      }
+      const notion = await NotionModel.findOne({ _id: b.notionId });
+
+      if(notion) {
+        await NotionModel.deleteOne({ _id: b.notionId });
       }
       
       return NextResponse.json({ 
