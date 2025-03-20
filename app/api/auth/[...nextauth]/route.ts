@@ -18,7 +18,7 @@ export const authOptions = {
           if (!credentials) throw new Error("Missing credentials");
 
           let user = await EntrepreneurModel.findOne({ email: credentials.email });
-          let userType = "entrepreneur";
+          let userType = "profile";
 
           if (!user) {
             user = await MentorModel.findOne({ email: credentials.email });

@@ -88,6 +88,7 @@ export interface Notion extends Document {
   blogsE: mongoose.Schema.Types.ObjectId[];
   blogsM: mongoose.Schema.Types.ObjectId[];
   teamMembers: mongoose.Schema.Types.ObjectId[];
+  aiDescription: string;
 }
 
 const NotionSchema: Schema<Notion> = new Schema(
@@ -101,6 +102,7 @@ const NotionSchema: Schema<Notion> = new Schema(
     blogsE: [{ type: Schema.Types.ObjectId, ref: "BlogE" }],
     teamMembers: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
     blogsM: [{ type: Schema.Types.ObjectId, ref: "BlogM" }],
+    aiDescription: { type: String },
   },
   { timestamps: true }
 );
@@ -218,27 +220,24 @@ const NewsSchema: Schema<News> = new Schema(
   { timestamps: true }
 );
 
-
-export interface Message extends Document {
-  sender: string;
-  receiver: string;
-  content: string;
-  timestamp: Date;
+export interface aiBlogger extends Document {
+  textToPassToAi: {
+    idOfNotion: mongoose.Schema.Types.ObjectId;
+    text: string;
+  };
 }
 
-const MessageSchema: Schema<Message> = new Schema(
+const aiBloggerSchema: Schema<aiBlogger> = new Schema(
   {
-    sender: { type: String, required: true },
-    receiver: { type: String, required: true },
-    content: { type: String, required: true },
-    timestamp: { type: Date, default: Date.now },
-  },
-  { timestamps: true }
-);
+    textToPassToAi:{
+      idOfNotion: { type: Schema.Types.ObjectId, ref: "Notion", required: true },
+      text: { type: String, required: true },
+    }
+  }
+)
 
-export const MessageModel: Model<Message> =
-  mongoose.models.Message || mongoose.model<Message>("Message", MessageSchema);
-
+export const aiBloggerModel: Model<aiBlogger> =
+  mongoose.models.aiBlogger || mongoose.model<aiBlogger>("aiBlogger", aiBloggerSchema);
 
 export const NewsModel: Model<News> =
   mongoose.models.News || mongoose.model<News>("News", NewsSchema);
