@@ -1,9 +1,7 @@
-
-// abhi ke liye this page might cause linting errors will fix
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import User from "@/lib/models/User";
+import { EntrepreneurModel, MentorModel } from "@/model/model";
 import connectDB from "@/lib/db";
 
 export const authOptions = {
@@ -18,18 +16,29 @@ export const authOptions = {
         try {
           await connectDB();
           if (!credentials) throw new Error("Missing credentials");
-          const user = await User.findOne({ email: credentials.email });
+
+          let user = await EntrepreneurModel.findOne({ email: credentials.email });
+          let userType = "entrepreneur";
+
+          if (!user) {
+            user = await MentorModel.findOne({ email: credentials.email });
+            userType = "mentor";
+          }
 
           if (!user) throw new Error("User not found");
 
           if (!user.isVerified) throw new Error("Please verify your email first");
 
-          const isValidPassword = await bcrypt.compare(credentials!.password, user.password);
+          const isValidPassword = await bcrypt.compare(credentials.password, user.password);
           if (!isValidPassword) throw new Error("Invalid credentials");
 
           return {
-            id: user._id.toString(),
+            id: user.id.toString(),
             email: user.email,
+            username: user.username,
+            name: user.name,
+            profileImage: user.profileImage,
+            userType,
             isVerified: user.isVerified,
           };
         } catch (err) {
@@ -38,24 +47,32 @@ export const authOptions = {
       },
     }),
   ],
-  callbacks:{
+  callbacks: {
     async jwt({ token, user }) {
-        if (user) {
-          token.id = user.id;
-          token.email = user.email;
-          token.isVerified = user.isVerified;
-        }
-        return token;
-      },
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.username = user.username;
+        token.name = user.name;
+        token.profileImage = user.profileImage;
+        token.userType = user.userType;
+        token.isVerified = user.isVerified;
+      }
+      return token;
+    },
 
-      async session({ session, token }) {
-        if (token) {
-          session.user.id = token.id;
-          session.user.email = token.email;
-          session.user.isVerified = token.isVerified;
-        }
-        return session;
-      },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id;
+        session.user.email = token.email;
+        session.user.username = token.username;
+        session.user.name = token.name;
+        session.user.profileImage = token.profileImage;
+        session.user.userType = token.userType;
+        session.user.isVerified = token.isVerified;
+      }
+      return session;
+    },
   },
   pages: {
     signIn: "/login",
