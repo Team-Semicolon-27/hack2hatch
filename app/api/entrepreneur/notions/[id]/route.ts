@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse} from "next/server";
-import {NotionModel} from "@/model/model";
+import {EntrepreneurModel, NotionModel} from "@/model/model";
 import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import {getServerSession} from "next-auth";
@@ -162,6 +162,14 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{id
   try {
     await connectDB();
     
+    const session = await getServerSession(authOptions);
+    const user = session?.user;
+    
+    if (!session || !user) {
+      return NextResponse.json({ error: "no user found" }, { status: 401});
+    }
+    
+    
     const { id } = await params;
     
     if (!id) {
@@ -171,6 +179,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{id
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: "id not valid" }, { status: 403 });
     }
+    
+    const userId = new mongoose.Types.ObjectId(user.id);
     
     const objectId = new mongoose.Types.ObjectId(id);
     
@@ -184,6 +194,17 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{id
     if (!notion) {
       return NextResponse.json({ error: "notions not found" }, { status: 404});
     }
+    
+    await EntrepreneurModel.updateOne(
+      {
+        _id: userId
+      },
+      {
+        $pull: {
+          notionsOwnerOf: objectId
+        }
+      }
+    )
     
     return NextResponse.json({ status: 200 });
   } catch (error) {

@@ -26,7 +26,7 @@ export default function Navbar() {
       
       {/* Rightmost: Profile */}
       <div>
-        <Link href="/profile" className="hover:text-orange-400 transition">Profile</Link>
+        <Link href="/profile/entrepreneur" className="hover:text-orange-400 transition">Profile</Link>
       </div>
     </nav>
   );
