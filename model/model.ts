@@ -115,6 +115,7 @@ export interface BlogE extends Document {
   comments: mongoose.Schema.Types.ObjectId[];
   links: string[];
   tags: string[];
+  blogAI: string;
 }
 
 const BlogESchema: Schema<BlogE> = new Schema(
@@ -134,6 +135,7 @@ const BlogESchema: Schema<BlogE> = new Schema(
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     links: [{ type: String }],
     tags: [{ type: String }],
+    blogAI: { type: String },
   },
   { timestamps: true }
 );
@@ -148,6 +150,7 @@ export interface BlogM extends Document {
   comments: mongoose.Schema.Types.ObjectId[];
   links: string[];
   tags: string[];
+  blogAI: string;
 }
 
 const BlogMSchema: Schema<BlogM> = new Schema(
@@ -167,6 +170,7 @@ const BlogMSchema: Schema<BlogM> = new Schema(
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     links: [{ type: String }],
     tags: [{ type: String }],
+    blogAI: { type: String },
   },
   { timestamps: true }
 );
