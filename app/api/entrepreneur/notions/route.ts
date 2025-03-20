@@ -1,6 +1,6 @@
 import {NextRequest, NextResponse} from "next/server";
 import connectDB from "@/lib/db";
-import {NotionModel} from "@/model/model";
+import {EntrepreneurModel, NotionModel} from "@/model/model";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
@@ -81,8 +81,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "no user found" }, { status: 401});
     }
     
-    if (user.userType !== "entrepreneur") {
-      return NextResponse.json({ error: "user is not entrepreneur"}, { status: 401 })
+    if (user.userType !== "profile") {
+      return NextResponse.json({ error: "user is not profile"}, { status: 401 })
     }
     
     const userId = new mongoose.Types.ObjectId(user.id);
@@ -104,6 +104,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "failed to create notions" }, { status: 500 });
     }
     
+    await EntrepreneurModel.updateOne(
+      {
+        _id: userId,
+      },
+      {
+        $addToSet: {
+          notionsOwnerOf: notion._id
+        }
+      }
+    )
     return NextResponse.json({ status: 200 });
   } catch (error) {
     return NextResponse.json(

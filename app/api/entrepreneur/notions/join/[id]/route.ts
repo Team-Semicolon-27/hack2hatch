@@ -2,7 +2,7 @@ import {NextRequest, NextResponse} from "next/server";
 import connectDB from "@/lib/db";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/app/api/auth/[...nextauth]/route";
-import {NotionModel} from "@/model/model";
+import {EntrepreneurModel, MentorModel, NotionModel} from "@/model/model";
 import mongoose from "mongoose";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{id: string}> }) {
@@ -31,28 +31,37 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{id:
     const objectId = new mongoose.Types.ObjectId(id);
     
     if (user.userType === "entrepreneur") {
-      const notion = await NotionModel.updateOne({
+      await NotionModel.updateOne({
         _id: objectId
       }, {
         $addToSet: {members: userId},
       })
       
-      if (!notion) {
-        return NextResponse.json({ error: "notion not found" }, { status: 404 });
-      }
+      await EntrepreneurModel.updateOne(
+        {
+          _id: userId,
+        },
+        {
+          $addToSet: {notionsPartOf: objectId},
+        }
+      )
       
       return NextResponse.json({ status: 200 });
     } else {
-      const notion = await NotionModel.updateOne({
+      await NotionModel.updateOne({
         _id: objectId
       }, {
         $addToSet: {mentors: userId},
       })
       
-      if (!notion) {
-        return NextResponse.json({ error: "notion not found" }, { status: 404 });
-      }
-      
+      await MentorModel.updateOne(
+        {
+          _id: userId,
+        },
+        {
+          $addToSet: {notionsPartOf: objectId},
+        }
+      )
       return NextResponse.json({ status: 200 });
     }
   } catch (error) {
