@@ -125,7 +125,7 @@ export default function NotionDetailsPage() {
         </div>
         
         <div className="mt-6">
-          <a href={`/notions/${id}/add-blog`} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold inline-block">
+          <a href={`/notions/blogs/add/${id}`} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold inline-block">
             Add Blog
           </a>
         </div>
