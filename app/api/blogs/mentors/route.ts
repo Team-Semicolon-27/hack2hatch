@@ -1,6 +1,6 @@
 import mongoose, { mongo } from "mongoose";
 import {NextResponse} from "next/server";
-import { BlogE, BlogEModel } from "../../../../model/model";
+import { BlogM, BlogMModel } from "../../../../model/model";
 import { EntrepreneurModel } from "../../../../model/model";
 import connectDB from "@/lib/db"
 import { getServerSession, User } from "next-auth";
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Unauthorized. User must be logged in.' }, { status: 401 });
       }
       
-      const blog = await BlogEModel.create({
+      const blog = await BlogMModel.create({
         author: user.id,
         title,
         content,
@@ -62,7 +62,7 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: 'Unauthorized. User must be logged in.' }, { status: 401 });
       }
 
-      const blog = await BlogEModel.findOneAndUpdate({ _id: id, author: user.id }, {
+      const blog = await BlogMModel.findOneAndUpdate({ _id: id, author: user.id }, {
         title,
         content,
         attachments,
@@ -100,7 +100,7 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ error: 'Unauthorized. User must be logged in.' }, { status: 401 });
       }
 
-      const blog = await BlogEModel.findOneAndDelete({ _id: id, author: user.id });
+      const blog = await BlogMModel.findOneAndDelete({ _id: id, author: user.id });
 
       if(!blog) {
         return NextResponse.json({ error: 'Failed to delete blog post' }, { status: 500 });
@@ -125,7 +125,7 @@ export async function GET(req: Request) {
       await connectDB();
       const { id } = await req.json();
       
-      const blog = await BlogEModel 
+      const blog = await BlogMModel 
         .findById(id)
         .populate('author', 'name email')
         .populate('likes.user', 'name email')
