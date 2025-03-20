@@ -9,6 +9,7 @@ export interface Entrepreneur extends Document {
   isVerified: boolean;
   verificationCode: string;
   resetPasswordToken?: string;
+  interestedTopics:string[];
   resetPasswordExpires?: Date;
   notionsOwnerOf: mongoose.Schema.Types.ObjectId[];
   notionsPartOf: mongoose.Schema.Types.ObjectId[];
@@ -27,6 +28,7 @@ const EntrepreneurSchema: Schema<Entrepreneur> = new Schema(
     profileImage: { type: String, required: true },
     isVerified: { type: Boolean, default: false },
     verificationCode: { type: String, required: true },
+    interestedTopics:[{type:String,required:true}],
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
     notionsOwnerOf: [{ type: Schema.Types.ObjectId, ref: "Notion" }],

@@ -1,103 +1,306 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { useEffect, useState } from "react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Twitter,
+  MessageSquare,
+  ExternalLink,
+  Heart,
+  MessageCircle,
+  Repeat,
+  ArrowUpFromLine,
+  ArrowDownFromLine,
+  Share2,
+  Bookmark,
+} from "lucide-react"
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+type Post = {
+  platform: string
+  title: string
+  type: string
+  content: string
+  media?: string | null
+  url: string
 }
+
+export default function Page() {
+  const [posts, setPosts] = useState<Post[]>([])
+  const [activeFilter, setActiveFilter] = useState<string>("all")
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setIsLoading(true)
+      try {
+        const response = await fetch("/api/news")
+        const data = await response.json()
+        if (Array.isArray(data)) {
+          setPosts(data)
+        } else {
+          console.error("Unexpected API response format", data)
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchPosts()
+  }, [])
+
+  const filteredPosts =
+    activeFilter === "all" ? posts : posts.filter((post) => post.platform.toLowerCase() === activeFilter)
+
+  return (
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
+      <h1 className="text-2xl md:text-3xl font-bold mb-6">Social Feed</h1>
+
+      <Tabs defaultValue="all" value={activeFilter} onValueChange={setActiveFilter} className="mb-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="all">All Posts</TabsTrigger>
+          <TabsTrigger value="twitter">Twitter</TabsTrigger>
+          <TabsTrigger value="reddit">Reddit</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-pulse space-y-4 w-full">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-48 bg-muted rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      ) : filteredPosts.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">No posts found for this platform.</div>
+      ) : (
+        <div className="space-y-6">
+          {filteredPosts.map((post, index) =>
+            post.platform.toLowerCase() === "twitter" ? (
+              <TwitterCard key={index} post={post} />
+            ) : post.platform.toLowerCase() === "reddit" ? (
+              <RedditCard key={index} post={post} />
+            ) : (
+              <DefaultCard key={index} post={post} />
+            ),
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TwitterCard({ post }: { post: Post }) {
+  return (
+    <Card className="overflow-hidden border border-gray-200 hover:shadow-md">
+      <CardContent className="p-0">
+        <div className="bg-[#1DA1F2] h-1 w-full"></div>
+        <div className="p-4">
+          {/* Twitter header */}
+          <div className="flex items-start gap-3">
+            <Avatar className="h-10 w-10 border">
+              <AvatarImage src="/placeholder.svg?height=40&width=40" alt="Profile" />
+              <AvatarFallback className="bg-[#1DA1F2] text-white">T</AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="flex items-center gap-1">
+                <span className="font-bold text-sm">Twitter User</span>
+                <span className="text-muted-foreground text-sm">@twitteruser</span>
+              </div>
+              <p className="text-sm text-muted-foreground">2h ago</p>
+            </div>
+            <Twitter className="h-5 w-5 text-[#1DA1F2] ml-auto" />
+          </div>
+
+          {/* Tweet content */}
+          <div className="mt-2">
+            <p className="text-[15px] leading-normal">{post.content || post.title}</p>
+
+            {post.media && (post.type === "image" || post.type === "video") && (
+              <div className="mt-3 rounded-xl overflow-hidden border border-gray-200">
+                {post.type === "image" ? (
+                  <img src={post.media || "/placeholder.svg"} alt={post.title} className="w-full h-auto object-cover" />
+                ) : (
+                  <video controls className="w-full h-auto">
+                    <source src={post.media} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Twitter actions */}
+          <div className="flex justify-between mt-4 text-muted-foreground">
+            <button className="flex items-center gap-1 text-xs hover:text-[#1DA1F2]">
+              <MessageCircle className="h-4 w-4" />
+              <span>24</span>
+            </button>
+            <button className="flex items-center gap-1 text-xs hover:text-green-500">
+              <Repeat className="h-4 w-4" />
+              <span>5</span>
+            </button>
+            <button className="flex items-center gap-1 text-xs hover:text-red-500">
+              <Heart className="h-4 w-4" />
+              <span>142</span>
+            </button>
+            <button className="flex items-center gap-1 text-xs hover:text-[#1DA1F2]">
+              <Share2 className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="bg-gray-50 py-2 px-4 border-t">
+        <a
+          href={post.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs flex items-center gap-1 text-[#1DA1F2] hover:underline"
+        >
+          View on Twitter <ExternalLink className="h-3 w-3" />
+        </a>
+      </CardFooter>
+    </Card>
+  )
+}
+
+function RedditCard({ post }: { post: Post }) {
+  return (
+    <Card className="overflow-hidden border border-gray-200 hover:shadow-md">
+      <CardContent className="p-0">
+        <div className="bg-[#FF4500] h-1 w-full"></div>
+
+        {/* Reddit header */}
+        <div className="bg-gray-50 p-3 border-b flex items-center gap-2">
+          <Avatar className="h-6 w-6">
+            <AvatarImage src="/placeholder.svg?height=24&width=24" alt="Subreddit" />
+            <AvatarFallback className="bg-[#FF4500] text-white text-xs">r/</AvatarFallback>
+          </Avatar>
+          <span className="text-sm font-medium">r/subreddit</span>
+          <span className="text-xs text-muted-foreground">• Posted by u/redditor • 5h ago</span>
+          <MessageSquare className="h-5 w-5 text-[#FF4500] ml-auto" />
+        </div>
+
+        {/* Reddit content */}
+        <div className="flex">
+          {/* Voting sidebar */}
+          <div className="bg-gray-50 p-2 flex flex-col items-center border-r">
+            <button className="text-gray-400 hover:text-[#FF4500]">
+              <ArrowUpFromLine className="h-5 w-5" />
+            </button>
+            <span className="text-xs font-medium my-1">42</span>
+            <button className="text-gray-400 hover:text-blue-500">
+              <ArrowDownFromLine className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Main content */}
+          <div className="p-3 w-full">
+            <h3 className="font-medium text-base">{post.title}</h3>
+
+            {post.content && post.type === "text" && <p className="mt-2 text-sm">{post.content}</p>}
+
+            {post.media && (post.type === "image" || post.type === "video") && (
+              <div className="mt-3">
+                {post.type === "image" ? (
+                  <img
+                    src={post.media || "/placeholder.svg"}
+                    alt={post.title}
+                    className="w-full h-auto object-cover rounded"
+                  />
+                ) : (
+                  <video controls className="w-full h-auto rounded">
+                    <source src={post.media} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Reddit actions */}
+        <div className="border-t p-2 flex gap-4 text-xs text-muted-foreground">
+          <button className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded">
+            <MessageCircle className="h-4 w-4" />
+            <span>12 Comments</span>
+          </button>
+          <button className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded">
+            <Share2 className="h-4 w-4" />
+            <span>Share</span>
+          </button>
+          <button className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded">
+            <Bookmark className="h-4 w-4" />
+            <span>Save</span>
+          </button>
+        </div>
+      </CardContent>
+      <CardFooter className="bg-gray-50 py-2 px-4 border-t">
+        <a
+          href={post.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs flex items-center gap-1 text-[#FF4500] hover:underline"
+        >
+          View on Reddit <ExternalLink className="h-3 w-3" />
+        </a>
+      </CardFooter>
+    </Card>
+  )
+}
+
+function DefaultCard({ post }: { post: Post }) {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="font-semibold text-lg">{post.title}</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge variant="outline">{post.platform}</Badge>
+              <span className="text-xs text-muted-foreground capitalize">{post.type}</span>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="pb-3">
+        {post.type === "text" && post.content && <p className="text-gray-800 dark:text-gray-200">{post.content}</p>}
+
+        {post.media && (post.type === "image" || post.type === "video") && (
+          <div className="mt-3 rounded-md overflow-hidden">
+            {post.type === "image" ? (
+              <img
+                src={post.media || "/placeholder.svg"}
+                alt={post.title}
+                className="w-full h-auto object-cover rounded-md"
+              />
+            ) : (
+              <video controls className="w-full h-auto rounded-md">
+                <source src={post.media} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            )}
+          </div>
+        )}
+      </CardContent>
+
+      <CardFooter className="pt-0">
+        <a
+          href={post.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm flex items-center gap-1 text-primary hover:underline"
+        >
+          View Original <ExternalLink className="h-3 w-3" />
+        </a>
+      </CardFooter>
+    </Card>
+  )
+}
+

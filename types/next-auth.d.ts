@@ -11,6 +11,7 @@ declare module "next-auth" {
       profileImage: string;
       userType: "profile" | "mentor";
       isVerified: boolean;
+      interestedTopics :string[];
     } & DefaultSession["user"];
   }
 }
@@ -24,5 +25,6 @@ declare module "next-auth/jwt" {
     profileImage: string;
     userType: "profile" | "mentor";
     isVerified: boolean;
+    interestedTopics :string[];
   }
 }
