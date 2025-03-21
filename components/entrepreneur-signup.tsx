@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Paperclip } from "lucide-react";
+import { CldUploadWidget } from "next-cloudinary";
+
+interface UploadResult {
+  info: { secure_url: string };
+}
 
 export default function EntrepreneurSignup() {
   const [email, setEmail] = useState("");
@@ -13,6 +18,12 @@ export default function EntrepreneurSignup() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const handleUploadSuccess = (result: UploadResult) => {
+    if (result?.info?.secure_url) {
+      setProfileImage(result.info.secure_url);
+    }
+  };
 
   const handleSignup = async () => {
     setLoading(true);
@@ -47,7 +58,6 @@ export default function EntrepreneurSignup() {
           { id: "name", label: "Name", value: name, setter: setName },
           { id: "email", label: "Email", value: email, setter: setEmail, type: "email" },
           { id: "password", label: "Password", value: password, setter: setPassword, type: "password" },
-          { id: "profileImage", label: "Profile Image URL", value: profileImage, setter: setProfileImage },
         ].map(({ id, label, value, setter, type = "text" }) => (
           <div key={id} className="relative">
             <input
@@ -67,6 +77,33 @@ export default function EntrepreneurSignup() {
             </label>
           </div>
         ))}
+
+        {/* Cloudinary Upload Widget */}
+        <CldUploadWidget
+          uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+          onSuccess={(result) => handleUploadSuccess(result as UploadResult)}
+        >
+          {({ open }: { open: () => void }) => (
+            <div
+              onClick={() => open()}
+              className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center cursor-pointer hover:bg-gray-50 transition-all"
+            >
+              <Paperclip className="mx-auto h-12 w-12 text-orange-400" />
+              <p className="mt-1 text-sm text-gray-500">Click to upload image</p>
+            </div>
+          )}
+        </CldUploadWidget>
+
+        {/* Display Uploaded Image */}
+        {profileImage && (
+          <div className="flex justify-center">
+            <img
+              src={profileImage}
+              alt="Profile Preview"
+              className="h-20 w-20 rounded-full border border-gray-300 shadow-md"
+            />
+          </div>
+        )}
 
         <button
           onClick={handleSignup}
