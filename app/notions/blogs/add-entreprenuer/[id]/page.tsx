@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import toast from "react-hot-toast"
 // Dynamically import TipTap editor
-const TinyMce = dynamic(() => import("../../components/ckeditor"), {
+const TinyMce = dynamic(() => import("../../../../../components/ckeditor"), {
   ssr: false,
   loading: () => <div className="h-64 w-full bg-orange-50 animate-pulse rounded"></div>,
 })
@@ -86,7 +86,7 @@ export default function CreateBlog() {
     }
 
     try {
-      const response = await fetch("/api/upload", {
+      const response = await fetch("/api/blogs/entrepreneur/", {
         method: "POST",
         body: formData,
       })

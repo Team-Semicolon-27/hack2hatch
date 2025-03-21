@@ -146,11 +146,21 @@ export default function NotionDetailsPage() {
           )}
         </div>
         
-        <div className="mt-6">
-          <a href={`/notions/blogs/add/${id}`} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold inline-block">
-            Add Blog
-          </a>
-        </div>
+        {notion.isMentor &&         
+          <div className="mt-6">
+            <a href={`/notions/blogs/add-mentor-blog/${id}`} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold inline-block">
+              Add Blog
+            </a>
+          </div>
+        }
+
+        {(notion.isOwner || notion.isTeamMember) &&         
+          <div className="mt-6">
+            <a href={`/notions/blogs/add-entrepreneur/${id}`} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold inline-block">
+              Add Blog
+            </a>
+          </div>
+        }
       </div>
     </div>
   );

@@ -11,12 +11,15 @@ interface LexicalEditorProps {
   value: string;
   fontsize: string;
   textAlignment: string;
-formattingOptions: {
+  formattingOptions: {
     headings: boolean,
     codeBlocks: boolean,
     quotes: boolean,
     tables: boolean,
     advanced: boolean,
+    bold: boolean,
+    italic: boolean,
+    underline: boolean,
 };
   onChange: (content: string) => void;
 }

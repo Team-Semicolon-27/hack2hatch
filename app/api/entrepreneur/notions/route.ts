@@ -1,10 +1,6 @@
 import {NextRequest, NextResponse} from "next/server";
 import connectDB from "@/lib/db";
-<<<<<<< HEAD
-import {NotionModel, aiBloggerModel} from "@/model/model";
-=======
-import {EntrepreneurModel, NotionModel} from "@/model/model";
->>>>>>> ab606b9754cb33ef32feaf0e1203bad369804b45
+import {EntrepreneurModel, NotionModel, aiBloggerModel} from "@/model/model";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 import mongoose, { ObjectId } from "mongoose";
