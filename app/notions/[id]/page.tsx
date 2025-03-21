@@ -1,5 +1,5 @@
 "use client"
-
+import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { useRouter, useParams } from "next/navigation"
@@ -38,6 +38,7 @@ interface Notion {
 }
 
 export default function NotionDetailsPage() {
+  const { data: session } = useSession();
   const router = useRouter()
   const {id} = useParams()
   const [notion, setNotion] = useState<Notion | null>(null)
@@ -61,21 +62,33 @@ export default function NotionDetailsPage() {
     fetchNotion()
   }, [id])
   
+
   const handleJoin = async () => {
     try {
-      setActionLoading(true)
-      const res = await axios.patch(`/api/entrepreneur/notions/join/${id}`)
-      if (res.status === 200) {
-        router.refresh()
-        // Update local state to reflect changes immediately
-        setNotion((prev) => (prev ? {...prev, isMember: true} : null))
+      setActionLoading(true);
+      const isMentor = session?.user?.userType === 'mentor';
+      
+      let res;
+      if (isMentor) {
+        res = await axios.patch(`/api/mentor/notions/join/${id}`);
+        if (res.status === 200) {
+          router.refresh();
+          setNotion((prev) => (prev ? {...prev, isMember: true, isMentor: true} : null));
+        }
+      } else {
+        res = await axios.patch(`/api/entrepreneur/notions/join/${id}`);
+        if (res.status === 200) {
+          router.refresh();
+     
+          setNotion((prev) => (prev ? {...prev, isMember: true} : null));
+        }
       }
     } catch (error) {
-      console.error("Error performing action:", error)
+      console.error("Error performing action:", error);
     } finally {
-      setActionLoading(false)
+      setActionLoading(false);
     }
-  }
+  };
   
   const handleLeave = async () => {
     try {
