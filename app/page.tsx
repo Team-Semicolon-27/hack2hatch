@@ -20,11 +20,15 @@ import {
 
 type Post = {
   platform: string
+  likes: number
+  comment: number
+  author: string
   title: string
   type: string
   content: string
   media?: string | null
   url: string
+  subreddit?: string
 }
 
 export default function Page() {
@@ -37,9 +41,13 @@ export default function Page() {
       setIsLoading(true)
       try {
         const response = await fetch("/api/news")
+
         const data = await response.json()
+        console.log(data)
         if (Array.isArray(data)) {
-          setPosts(data)
+          // Shuffle the posts array for random order
+          const shuffledPosts = [...data].sort(() => Math.random() - 0.5)
+          setPosts(shuffledPosts)
         } else {
           console.error("Unexpected API response format", data)
         }
@@ -80,15 +88,15 @@ export default function Page() {
         <div className="text-center py-12 text-muted-foreground">No posts found for this platform.</div>
       ) : (
         <div className="space-y-6">
-          {filteredPosts.map((post, index) =>
-            post.platform.toLowerCase() === "twitter" ? (
-              <TwitterCard key={index} post={post} />
-            ) : post.platform.toLowerCase() === "reddit" ? (
-              <RedditCard key={index} post={post} />
-            ) : (
-              <DefaultCard key={index} post={post} />
-            ),
-          )}
+          {filteredPosts.map((post, index) => {
+            if (post.platform.toLowerCase() === "twitter") {
+              return <TwitterCard key={index} post={post} />
+            } else if (post.platform.toLowerCase() === "reddit") {
+              return <RedditCard key={index} post={post} />
+            } else {
+              return <DefaultCard key={index} post={post} />
+            }
+          })}
         </div>
       )}
     </div>
@@ -105,12 +113,12 @@ function TwitterCard({ post }: { post: Post }) {
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 border">
               <AvatarImage src="/placeholder.svg?height=40&width=40" alt="Profile" />
-              <AvatarFallback className="bg-[#1DA1F2] text-white">T</AvatarFallback>
+              <AvatarFallback className="bg-[#1DA1F2] text-white">{post.author}</AvatarFallback>
             </Avatar>
             <div>
               <div className="flex items-center gap-1">
-                <span className="font-bold text-sm">Twitter User</span>
-                <span className="text-muted-foreground text-sm">@twitteruser</span>
+                <span className="font-bold text-sm">{post.author}</span>
+                <span className="text-muted-foreground text-sm">@{post.author}</span>
               </div>
               <p className="text-sm text-muted-foreground">2h ago</p>
             </div>
@@ -139,7 +147,7 @@ function TwitterCard({ post }: { post: Post }) {
           <div className="flex justify-between mt-4 text-muted-foreground">
             <button className="flex items-center gap-1 text-xs hover:text-[#1DA1F2]">
               <MessageCircle className="h-4 w-4" />
-              <span>24</span>
+              <span>{post.comment}</span>
             </button>
             <button className="flex items-center gap-1 text-xs hover:text-green-500">
               <Repeat className="h-4 w-4" />
@@ -147,7 +155,7 @@ function TwitterCard({ post }: { post: Post }) {
             </button>
             <button className="flex items-center gap-1 text-xs hover:text-red-500">
               <Heart className="h-4 w-4" />
-              <span>142</span>
+              <span>{post.likes}</span>
             </button>
             <button className="flex items-center gap-1 text-xs hover:text-[#1DA1F2]">
               <Share2 className="h-4 w-4" />
@@ -181,8 +189,8 @@ function RedditCard({ post }: { post: Post }) {
             <AvatarImage src="/placeholder.svg?height=24&width=24" alt="Subreddit" />
             <AvatarFallback className="bg-[#FF4500] text-white text-xs">r/</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium">r/subreddit</span>
-          <span className="text-xs text-muted-foreground">• Posted by u/redditor • 5h ago</span>
+          <span className="text-sm font-medium">r/{post.subreddit || "subreddit"}</span>
+          <span className="text-xs text-muted-foreground">• Posted by u/{post.author} • 5h ago</span>
           <MessageSquare className="h-5 w-5 text-[#FF4500] ml-auto" />
         </div>
 
@@ -193,7 +201,7 @@ function RedditCard({ post }: { post: Post }) {
             <button className="text-gray-400 hover:text-[#FF4500]">
               <ArrowUpFromLine className="h-5 w-5" />
             </button>
-            <span className="text-xs font-medium my-1">42</span>
+            <span className="text-xs font-medium my-1">{post.likes}</span>
             <button className="text-gray-400 hover:text-blue-500">
               <ArrowDownFromLine className="h-5 w-5" />
             </button>
@@ -228,7 +236,7 @@ function RedditCard({ post }: { post: Post }) {
         <div className="border-t p-2 flex gap-4 text-xs text-muted-foreground">
           <button className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded">
             <MessageCircle className="h-4 w-4" />
-            <span>12 Comments</span>
+            <span>{post.comment} Comments</span>
           </button>
           <button className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded">
             <Share2 className="h-4 w-4" />
@@ -264,6 +272,7 @@ function DefaultCard({ post }: { post: Post }) {
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="outline">{post.platform}</Badge>
               <span className="text-xs text-muted-foreground capitalize">{post.type}</span>
+              <span className="text-xs text-muted-foreground">By {post.author}</span>
             </div>
           </div>
         </div>
@@ -290,7 +299,17 @@ function DefaultCard({ post }: { post: Post }) {
         )}
       </CardContent>
 
-      <CardFooter className="pt-0">
+      <CardFooter className="pt-0 flex justify-between">
+        <div className="flex items-center gap-4">
+          <span className="text-sm flex items-center gap-1">
+            <Heart className="h-4 w-4 text-muted-foreground" />
+            {post.likes}
+          </span>
+          <span className="text-sm flex items-center gap-1">
+            <MessageCircle className="h-4 w-4 text-muted-foreground" />
+            {post.comment}
+          </span>
+        </div>
         <a
           href={post.url}
           target="_blank"

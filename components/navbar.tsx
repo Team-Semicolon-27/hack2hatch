@@ -99,7 +99,7 @@ export default function Navbar() {
               href="/" 
               className="text-xl font-bold text-[#FCA311]"
             >
-              Project Name
+              ConnectIn
             </Link>
           </div>
           

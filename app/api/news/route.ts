@@ -14,53 +14,83 @@ if (!TWITTER_BEARER_TOKEN || !REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET) {
 }
 
 const topicToSubredditMap: Record<string, string> = {
-    "AI & Machine Learning": "MachineLearning",
-    "Blockchain": "cryptocurrency",
-    "Cybersecurity": "cybersecurity",
-    "Web Development": "webdev",
-    "Startups & Business": "startups",
-    "Marketing & Growth": "marketing",
-    "Finance & Investing": "investing",
-    "Health & Wellness": "health",
-    "SaaS & Cloud Computing": "cloudcomputing",
-  };
-  
+  "AI & Machine Learning": "MachineLearning",
+  "Blockchain": "cryptocurrency",
+  "Cybersecurity": "cybersecurity",
+  "Web Development": "webdev",
+  "Startups & Business": "startups",
+  "Marketing & Growth": "marketing",
+  "Finance & Investing": "investing",
+  "Health & Wellness": "health",
+  "SaaS & Cloud Computing": "cloudcomputing",
+};
 
 const fetchTwitterPosts = async () => {
   try {
     await connectDB();
     const personalities = [
       "Elon Musk", "Bill Gates", "Sundar Pichai", "Jeff Bezos",
-      "Barack Obama", "Taylor Swift", "Cristiano Ronaldo", "Oprah Winfrey",
       "@elonmusk", "@BillGates", "@sundarpichai", "@JeffBezos",
-      "@BarackObama", "@taylorswift13", "@Cristiano", "@Oprah"
+      "Warren Buffett", "Mark Zuckerberg", "Satya Nadella", "Tim Cook",
+      "@WarrenBuffett", "@finkd", "@satyanadella", "@tim_cook",
+      "Naval Ravikant", "Peter Thiel", "Marc Andreessen", "Sam Altman",
+      "@naval", "@peterthiel", "@pmarca", "@sama",
+      "Richard Branson", "Reid Hoffman", "Steve Wozniak", "Jack Dorsey",
+      "@richardbranson", "@reidhoffman", "@stevewoz", "@jack",
+      "Patrick Collison", "John Collison", "Brian Chesky", "Drew Houston",
+      "@patrickc", "@collision", "@bchesky", "@drewhouston",
+      "Sheryl Sandberg", "Susan Wojcicki", "Melanie Perkins", "Whitney Wolfe Herd",
+      "@sherylsandberg", "@SusanWojcicki", "@MelanieCanva", "@WhitWolfeHerd",
+      "Jensen Huang", "Andrew Ng", "Demis Hassabis", "Emmett Shear",
+      "@nvidia", "@AndrewYNg", "@demishassabis", "@eshear"
     ];
-  
+    
+
     const query = personalities.map(term => `"${term}"`).join(" OR ");
-    const searchUrl = `https://api.twitter.com/2/tweets/search/recent?query=${encodeURIComponent(query)}&max_results=10&tweet.fields=created_at,text,entities`;
+    const searchUrl = `https://api.twitter.com/2/tweets/search/recent?query=${encodeURIComponent(query)}&max_results=10&tweet.fields=created_at,text,entities,public_metrics,author_id&expansions=author_id&user.fields=name,username`;
 
     const response = await fetch(searchUrl, {
       headers: { Authorization: `Bearer ${TWITTER_BEARER_TOKEN}` },
     });
 
     if (response.status === 429) {
-      console.warn("Rate limit exceeded. Fetching from MongoDB...");
+      const resetTime = response.headers.get("x-rate-limit-reset");
+      if (resetTime) {
+        const resetDate = new Date(parseInt(resetTime, 10) * 1000);
+        console.warn(`Rate limit exceeded. Try again at: ${resetDate.toLocaleString()}`);
+      }
       return await NewsModel.find({ platform: "Twitter" }).sort({ timestamp: -1 }).limit(10);
     }
 
     if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
 
     const data = await response.json();
-    if (!data?.data) throw new Error("Failed to fetch tweets");
+    if (!data?.data || !data.includes?.users) throw new Error("Failed to fetch tweets");
 
-    const tweets = data.data.map((tweet: any) => ({
-      platform: "Twitter",
-      title: "Tweet",
-      type: "text",
-      content: tweet.text,
-      url: `https://twitter.com/i/web/status/${tweet.id}`,
-      timestamp: new Date(tweet.created_at),
-    }));
+    // ✅ Fixed usersMap to handle possible missing users
+    const usersMap = new Map<string, { id: string; name: string }>(
+      (data.includes?.users || []).map((user: { id: string; name: string }) => [user.id, user])
+    );
+    
+
+    // ✅ Ensuring correct author retrieval
+    const tweets = data.data.map((tweet: any) => {
+      const user = usersMap.get(tweet.author_id);
+      return {
+        platform: "Twitter",
+        title: "Tweet",
+        type: "text",
+        content: tweet.text,
+        url: `https://twitter.com/i/web/status/${tweet.id}`,
+        timestamp: new Date(tweet.created_at),
+        likes: tweet.public_metrics.like_count || 0,
+        comments: tweet.public_metrics.reply_count || 0,
+        author: user?.name || "Unknown",
+      };
+    });
+    
+
+    console.log("Fetched Tweets:", JSON.stringify(tweets, null, 2));
 
     await NewsModel.insertMany(tweets);
     return tweets;
@@ -78,17 +108,17 @@ const fetchRedditPosts = async (userId: string) => {
     }
     const userProfile = await EntrepreneurModel.findOne({ email: session.user.email });
     
-    if(!userProfile){
-        return 
+    if (!userProfile) {
+      return [];
     }
-     
+
     if (!userProfile.interestedTopics || userProfile.interestedTopics.length === 0) {
       console.warn("User has no interested topics.");
       return [];
     }
 
     const subreddits = userProfile.interestedTopics
-        //@ts-ignore
+      //@ts-ignore
       .map(topic => topicToSubredditMap[topic])
       .filter(Boolean);
 
@@ -141,6 +171,10 @@ const fetchRedditPosts = async (userId: string) => {
         content: post.data.selftext || post.data.url,
         url: post.data.url,
         timestamp: new Date(post.data.created_utc * 1000),
+        likes: post.data.ups || 0,
+        comments: post.data.num_comments || 0,
+        author: post.data.author || "Unknown",
+        subreddit: post.data.subreddit,
       }));
 
       subredditPosts.push(...posts);
@@ -170,10 +204,15 @@ export async function GET(req: Request) {
       fetchTwitterPosts(),
       fetchRedditPosts(userId),
     ]);
+    const minCount = Math.min(twitterPosts.length, redditPosts.length);
 
-    return NextResponse.json([...twitterPosts, ...redditPosts]);
+    const balancedTwitterPosts = twitterPosts.slice(0, minCount);
+    const balancedRedditPosts = redditPosts.slice(0, minCount);
+
+    return NextResponse.json([...balancedTwitterPosts, ...balancedRedditPosts]);
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
