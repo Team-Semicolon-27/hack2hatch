@@ -1,16 +1,13 @@
-import mongoose, { mongo } from "mongoose";
 import { NextResponse } from "next/server";
-import { BlogE, BlogEModel, NotionModel, BlogMModel } from "../../../../model/model";
-import { EntrepreneurModel } from "../../../../model/model";
+import { BlogEModel, NotionModel, BlogMModel } from "@/model/model";
 import connectDB from "@/lib/db";
 import { getServerSession, User } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { aiWrapper } from "@/lib/aiwrapper";
 
-export async function GET(req: Request, { params }: { params: { blogId: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ blogId: string }> }) {
     try {
         await connectDB();
-        const { blogId } = params;
+        const { blogId } = await params;
         
         let blog = await BlogEModel
             .findById(blogId)
@@ -30,24 +27,19 @@ export async function GET(req: Request, { params }: { params: { blogId: string }
             return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });
         }
         
-        return NextResponse.json({
-            success: true,
-            message: 'Blog post found',
-            data: blog
-        }, { status: 200 });
+        return NextResponse.json(blog, { status: 200 });
     } catch (error) {
         console.error('Error fetching blog:', error);
         return NextResponse.json({
             error: 'Failed to fetch blog post',
-            details: (error as any).message
         }, { status: 500 });
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { blogId: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ blogId: string }> }) {
     try {
         await connectDB();
-        const { blogId } = params;
+        const { blogId } = await params;
         
         const session = await getServerSession(authOptions);
         const user: User = session?.user as User;
@@ -84,7 +76,6 @@ export async function DELETE(req: Request, { params }: { params: { blogId: strin
         console.error('Error deleting blog:', error);
         return NextResponse.json({ 
             error: 'Failed to delete blog post', 
-            details: (error as any).message 
         }, { status: 500 });
     }
 }

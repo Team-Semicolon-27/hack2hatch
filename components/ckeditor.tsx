@@ -8,8 +8,9 @@ interface RichTextEditorProps {
   onChange: (value: string) => void
 }
 
+
 export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
-  const editorRef = useRef<any>(null)
+  const editorRef = useRef<unknown>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   return (
