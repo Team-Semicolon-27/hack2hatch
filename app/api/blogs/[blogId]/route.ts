@@ -3,6 +3,7 @@ import { BlogEModel, NotionModel, BlogMModel } from "@/model/model";
 import connectDB from "@/lib/db";
 import { getServerSession, User } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import mongoose from "mongoose";
 
 export async function GET(req: Request, { params }: { params: Promise<{ blogId: string }> }) {
     try {
@@ -48,7 +49,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ blogI
             return NextResponse.json({ error: 'Unauthorized. User must be logged in.' }, { status: 401 });
         }
         
-        let blog = await BlogEModel.findOne({ _id: blogId, author: user.id });
+        const userId = new mongoose.Types.ObjectId(user.id);
+        
+        let blog = await BlogEModel.findOne({ _id: blogId, author: userId });
         let BlogModel = BlogEModel;
         
         if (!blog) {
