@@ -32,25 +32,32 @@ export default function Navbar() {
   
   async function handleSearch() {
     if (!searchQuery.trim()) return;
-    
+  
     setLoading(true);
     setError(null);
-    
+  
     try {
-      const res = await fetch(`/api/search?query=${searchQuery}`);
-      
+      const res = await fetch(`/api/search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: searchQuery }),
+      });
+  
       const data = await res.json();
-      if (data.type === "profile") {
-        router.push(`/profile/${data.username}`);
-      } else if (data.type === "blog") {
-        router.push(`/blogs/${data.blogId}`);
-      } else if (data.type === "notion") {
-        router.push(`/notions/${data.notionId}`);
+  
+      if (res.ok) {
+        if (data.notion) {
+          router.push(`/notions/${data.notion._id}`);
+        } else {
+          setError("No results found");
+        }
       } else {
-        setError("No results found");
+        setError(data.error || "Error searching");
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       setError("Error searching");
     } finally {
       setLoading(false);
