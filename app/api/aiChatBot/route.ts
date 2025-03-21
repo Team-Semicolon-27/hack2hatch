@@ -33,7 +33,13 @@ export async function POST(req: Request) {
         const allDocs = await NewsModel.find({});
         console.log('Total docs found:', allDocs.length);
 
-        const allText = allDocs.map(doc => `${doc.title || ''} ${doc.content || ''}`).join(' ');
+        const docsToProcess = allDocs.filter(doc => !doc.isVectored);
+        const allText = docsToProcess.map(doc => `${doc.title || ''} ${doc.content || ''}`).join(' ');
+
+        await NewsModel.updateMany(
+            { _id: { $in: docsToProcess.map(doc => doc._id) } },
+            { $set: { isVectored: true } }
+        );
 
         const result = await rag.processQuery(
             allText,
