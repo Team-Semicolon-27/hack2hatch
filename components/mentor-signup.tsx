@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Paperclip } from "lucide-react";
+import { CldUploadWidget } from "next-cloudinary";
 
-export default function EntrepreneurSignup() {
+interface UploadResult {
+  info: { secure_url: string };
+}
+
+export default function MentorSignup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -13,6 +18,12 @@ export default function EntrepreneurSignup() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const handleUploadSuccess = (result: UploadResult) => {
+    if (result?.info?.secure_url) {
+      setProfileImage(result.info.secure_url);
+    }
+  };
 
   const handleSignup = async () => {
     setLoading(true);
@@ -41,13 +52,12 @@ export default function EntrepreneurSignup() {
         Sign Up as an Mentor
       </h1>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {[
           { id: "username", label: "Username", value: username, setter: setUsername },
           { id: "name", label: "Name", value: name, setter: setName },
           { id: "email", label: "Email", value: email, setter: setEmail, type: "email" },
           { id: "password", label: "Password", value: password, setter: setPassword, type: "password" },
-          { id: "profileImage", label: "Profile Image URL", value: profileImage, setter: setProfileImage },
         ].map(({ id, label, value, setter, type = "text" }) => (
           <div key={id} className="relative">
             <input
@@ -56,16 +66,44 @@ export default function EntrepreneurSignup() {
               className="peer w-full p-3 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
               value={value}
               onChange={(e) => setter(e.target.value)}
-              placeholder=" "
             />
             <label
               htmlFor={id}
-              className="absolute left-3 top-3 text-gray-500 text-sm peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 transition-all peer-focus:top-1 peer-focus:text-xs peer-focus:text-orange-500"
+              className={`absolute left-3 transition-all ${
+                value ? "top-1 text-xs text-orange-500" : "top-3 text-sm text-gray-400"
+              }`}
             >
               {label}
             </label>
           </div>
         ))}
+
+        {/* Cloudinary Upload Widget */}
+        <CldUploadWidget
+          uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+          onSuccess={(result) => handleUploadSuccess(result as UploadResult)}
+        >
+          {({ open }: { open: () => void }) => (
+            <div
+              onClick={() => open()}
+              className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center cursor-pointer hover:bg-gray-50 transition-all"
+            >
+              <Paperclip className="mx-auto h-12 w-12 text-orange-400" />
+              <p className="mt-1 text-sm text-gray-500">Click to upload image</p>
+            </div>
+          )}
+        </CldUploadWidget>
+
+        {/* Display Uploaded Image */}
+        {profileImage && (
+          <div className="flex justify-center">
+            <img
+              src={profileImage}
+              alt="Profile Preview"
+              className="h-20 w-20 rounded-full border border-gray-300 shadow-md"
+            />
+          </div>
+        )}
 
         <button
           onClick={handleSignup}
