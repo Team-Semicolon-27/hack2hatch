@@ -18,7 +18,7 @@ export const authOptions = {
           if (!credentials) throw new Error("Missing credentials");
 
           let user = await EntrepreneurModel.findOne({ email: credentials.email });
-          let userType = "profile";
+          let userType = "entrepreneur";
 
           if (!user) {
             user = await MentorModel.findOne({ email: credentials.email });
@@ -40,6 +40,7 @@ export const authOptions = {
             profileImage: user.profileImage,
             userType,
             isVerified: user.isVerified,
+            interestedTopics:user.interestedTopics,
           };
         } catch (err) {
           throw new Error(err instanceof Error ? err.message : "Something went wrong");
@@ -57,6 +58,7 @@ export const authOptions = {
         token.profileImage = user.profileImage;
         token.userType = user.userType;
         token.isVerified = user.isVerified;
+        token.interestedTopics=user.interestedTopics
       }
       return token;
     },
@@ -70,6 +72,7 @@ export const authOptions = {
         session.user.profileImage = token.profileImage;
         session.user.userType = token.userType;
         session.user.isVerified = token.isVerified;
+        session.user.interestedTopics=token.interestedTopics;
       }
       return session;
     },
