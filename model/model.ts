@@ -208,8 +208,11 @@ export interface News extends Document {
   content: string;
   url: string;
   timestamp: Date;
+  likes: number;
+  comments: number;
+  author: string;
+  subreddit?:string;
 }
-
 const NewsSchema: Schema<News> = new Schema(
   {
     platform: { type: String, required: true },
@@ -218,9 +221,14 @@ const NewsSchema: Schema<News> = new Schema(
     content: { type: String, required: true },
     url: { type: String, required: true },
     timestamp: { type: Date, required: true },
+    likes: { type: Number, required: true, default: 0 },
+    comments: { type: Number, required: true, default: 0 },
+    author: { type: String, required: true },
+    subreddit:{type:String,required:false},
   },
   { timestamps: true }
 );
+
 
 export interface aiBlogger extends Document {
   textToPassToAi: {
