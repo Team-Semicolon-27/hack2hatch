@@ -55,7 +55,7 @@ export default function EntrepreneurProfile() {
         const res = await axios.get(`/api/entrepreneur/profile`)
         if (res.status === 200) {
           setProfile(res.data)
-          setInterestedTopics(res.data.interestedTopics || [])
+          setInterestedTopics(res.data.interestedTopics || [])          
         }
       } catch (error) {
         console.error("Error fetching profile:", error)
