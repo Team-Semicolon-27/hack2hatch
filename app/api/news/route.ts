@@ -45,9 +45,8 @@ const fetchTwitterPosts = async () => {
       "@nvidia", "@AndrewYNg", "@demishassabis", "@eshear"
     ];
     
-
     const query = personalities.map(term => `"${term}"`).join(" OR ");
-    const searchUrl = `https://api.twitter.com/2/tweets/search/recent?query=${encodeURIComponent(query)}&max_results=10&tweet.fields=created_at,text,entities,public_metrics,author_id&expansions=author_id&user.fields=name,username`;
+    const searchUrl = `https://api.twitter.com/2/tweets/search/recent?query=${encodeURIComponent(query)}&max_results=25&tweet.fields=created_at,text,entities,public_metrics,author_id&expansions=author_id&user.fields=name,username`;
 
     const response = await fetch(searchUrl, {
       headers: { Authorization: `Bearer ${TWITTER_BEARER_TOKEN}` },
@@ -59,7 +58,7 @@ const fetchTwitterPosts = async () => {
         const resetDate = new Date(parseInt(resetTime, 10) * 1000);
         console.warn(`Rate limit exceeded. Try again at: ${resetDate.toLocaleString()}`);
       }
-      return await NewsModel.find({ platform: "Twitter" }).sort({ timestamp: -1 }).limit(10);
+      return await NewsModel.find({ platform: "Twitter" }).sort({ timestamp: -1 }).limit(25);
     }
 
     if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
@@ -67,13 +66,10 @@ const fetchTwitterPosts = async () => {
     const data = await response.json();
     if (!data?.data || !data.includes?.users) throw new Error("Failed to fetch tweets");
 
-    // ✅ Fixed usersMap to handle possible missing users
     const usersMap = new Map<string, { id: string; name: string }>(
       (data.includes?.users || []).map((user: { id: string; name: string }) => [user.id, user])
     );
     
-
-    // ✅ Ensuring correct author retrieval
     const tweets = data.data.map((tweet: any) => {
       const user = usersMap.get(tweet.author_id);
       return {
@@ -89,7 +85,6 @@ const fetchTwitterPosts = async () => {
       };
     });
     
-
     console.log("Fetched Tweets:", JSON.stringify(tweets, null, 2));
 
     await NewsModel.insertMany(tweets);
@@ -100,14 +95,27 @@ const fetchTwitterPosts = async () => {
   }
 };
 
-const fetchRedditPosts = async (userId: string) => {
+type Post = {
+  platform: string;
+  title: string;
+  type: string;
+  content: string;
+  url: string;
+  timestamp: Date;
+  likes: number;
+  comments: number;
+  author: string;
+  subreddit?: string; // Only for Reddit posts
+};
+
+const fetchRedditPosts = async (userId: string): Promise<Post[]> => {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       throw new Error("User not authenticated");
     }
     const userProfile = await EntrepreneurModel.findOne({ email: session.user.email });
-    
+
     if (!userProfile) {
       return [];
     }
@@ -149,7 +157,7 @@ const fetchRedditPosts = async (userId: string) => {
     }
 
     const accessToken = authData.access_token;
-    const subredditPosts = [];
+    const subredditPosts: Post[] = [];
 
     for (const subreddit of subreddits) {
       const response = await fetch(`https://oauth.reddit.com/r/${subreddit}/hot?limit=5`, {
@@ -164,7 +172,7 @@ const fetchRedditPosts = async (userId: string) => {
       const data = await response.json();
       if (!data?.data?.children) continue;
 
-      const posts = data.data.children.map((post: any) => ({
+      const posts = data.data.children.map((post: any): Post => ({
         platform: "Reddit",
         title: post.data.title,
         type: "text",
@@ -188,6 +196,7 @@ const fetchRedditPosts = async (userId: string) => {
   }
 };
 
+
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -204,15 +213,10 @@ export async function GET(req: Request) {
       fetchTwitterPosts(),
       fetchRedditPosts(userId),
     ]);
-    const minCount = Math.min(twitterPosts.length, redditPosts.length);
 
-    const balancedTwitterPosts = twitterPosts.slice(0, minCount);
-    const balancedRedditPosts = redditPosts.slice(0, minCount);
-
-    return NextResponse.json([...balancedTwitterPosts, ...balancedRedditPosts]);
+    return NextResponse.json([...twitterPosts, ...redditPosts].slice(0, 50));
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-

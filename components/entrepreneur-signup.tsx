@@ -41,7 +41,7 @@ export default function EntrepreneurSignup() {
         Sign Up as an Entrepreneur
       </h1>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {[
           { id: "username", label: "Username", value: username, setter: setUsername },
           { id: "name", label: "Name", value: name, setter: setName },
@@ -56,11 +56,12 @@ export default function EntrepreneurSignup() {
               className="peer w-full p-3 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
               value={value}
               onChange={(e) => setter(e.target.value)}
-              placeholder=" "
             />
             <label
               htmlFor={id}
-              className="absolute left-3 top-3 text-gray-500 text-sm peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 transition-all peer-focus:top-1 peer-focus:text-xs peer-focus:text-orange-500"
+              className={`absolute left-3 transition-all ${
+                value ? "top-1 text-xs text-orange-500" : "top-3 text-sm text-gray-400"
+              }`}
             >
               {label}
             </label>
