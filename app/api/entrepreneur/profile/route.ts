@@ -131,6 +131,7 @@ export async function GET() {
           username: 1,
           name: 1,
           email: 1,
+          interestedTopics: 1,
           profileImage: 1,
           notionsOwnerOf: 1,
           notionsPartOf: 1,

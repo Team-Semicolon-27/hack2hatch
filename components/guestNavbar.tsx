@@ -2,23 +2,35 @@ import Link from "next/link";
 
 export default function NavbarGuest() {
   return (
-    <nav className="bg-gray-900 text-white p-4 shadow-lg">
-      <div className="container mx-auto flex justify-between items-center">
+    <nav className="bg-white shadow-md p-4">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Project Name */}
-        <h1 className="text-2xl font-bold text-orange-500">Project Name</h1>
-        
+        <h1 className="text-2xl font-bold text-[#FCA311]">ConnectIn</h1>
+
         {/* Authentication Buttons */}
-        <div className="flex gap-4">
-          <Link href="/signup/entrepreneur" className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/signup/entrepreneur"
+            className="bg-[#FCA311] text-white px-4 py-2 rounded-full hover:bg-[#e08c00] transition-colors shadow"
+          >
             Sign Up as Entrepreneur
           </Link>
-          <Link href="/signin/entrepreneur" className="bg-gray-700 hover:bg-gray-800 px-4 py-2 rounded-lg">
+          <Link
+            href="/signin/entrepreneur"
+            className="bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors shadow"
+          >
             Sign In as Entrepreneur
           </Link>
-          <Link href="/signup/mentor" className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg">
+          <Link
+            href="/signup/mentor"
+            className="bg-[#4CAF50] text-white px-4 py-2 rounded-full hover:bg-[#388E3C] transition-colors shadow"
+          >
             Sign Up as Mentor
           </Link>
-          <Link href="/signin/mentor" className="bg-gray-700 hover:bg-gray-800 px-4 py-2 rounded-lg">
+          <Link
+            href="/signin/mentor"
+            className="bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors shadow"
+          >
             Sign In as Mentor
           </Link>
         </div>
