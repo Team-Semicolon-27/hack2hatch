@@ -671,6 +671,47 @@ export default function NotionDetailsPage() {
             >
               My Notions
             </Link>
+            {notion.isOwner && (
+  <div className="flex gap-3">
+    <button
+      onClick={() => router.push(`/chat/mentor/${id}`)}
+      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+    >
+      Chat with Mentor
+    </button>
+    <button
+      onClick={() => router.push(`/chat/teamMember/${id}`)}
+      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+    >
+      Chat with Team Member
+    </button>
+  </div>
+)}
+{notion.isTeamMember && !notion.isOwner && (
+  <button
+    onClick={() => router.push(`/chat/owner/${id}`)}
+    className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+  >
+    Chat with Owner
+  </button>
+)}
+{notion.isMentor && !notion.isOwner && !notion.isTeamMember && (
+  <button
+    onClick={() => router.push(`/chat/owner-mentor/${id}`)}
+    className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+  >
+    Chat with Owner
+  </button>
+)}
+{notion.isMember && !notion.isOwner && !notion.isTeamMember && !notion.isMentor && (
+  <button
+    disabled
+    className="bg-gray-400 text-white px-4 py-2 rounded-lg font-medium cursor-not-allowed"
+  >
+    Not Authorized to Chat
+  </button>
+)}
+
           </div>
         </div>
       </div>
