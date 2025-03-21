@@ -212,6 +212,7 @@ export interface News extends Document {
   comments: number;
   author: string;
   subreddit?:string;
+  isVectored: boolean;
 }
 const NewsSchema: Schema<News> = new Schema(
   {
@@ -225,7 +226,7 @@ const NewsSchema: Schema<News> = new Schema(
     comments: { type: Number, required: true, default: 0 },
     author: { type: String, required: true },
     subreddit:{type:String,required:false},
-  },
+    isVectored: { type: Boolean, required: true, default: false}},
   { timestamps: true }
 );
 

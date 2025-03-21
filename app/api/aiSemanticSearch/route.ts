@@ -11,8 +11,7 @@ export async function POST(req: Request) {
     try {
       await connectDB();
       const { query } = await req.json();
-    // Query should search in the text field, not the object itself
-    const allText = await mongoose.models.aiBlogger.find({
+      const allText = await mongoose.models.aiBlogger.find({
         "textToPassToAi.text": { $regex: query, $options: 'i' }
     });
     
@@ -20,7 +19,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'No text found' }, { status: 404 });
     }
   
-  // Extract just the text field from each document
   const combinedText = allText.map((doc) => doc.textToPassToAi.text).join(' ');
         
         const idOfNotion = await aiSemanticSearch(combinedText, query);
