@@ -4,15 +4,17 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
+import mongoose from "mongoose";
 
 interface User {
+  _id: mongoose.Types.ObjectId
   name: string
   username: string
   profileImage: string
 }
 
 interface Blog {
-  _id: string
+  _id: mongoose.Types.ObjectId
   title: string
   author: User
   content: string
@@ -24,7 +26,7 @@ interface Blog {
 }
 
 interface Notion {
-  _id: string
+  _id: mongoose.Types.ObjectId
   title: string
   logo: string
   description: string
@@ -409,11 +411,11 @@ export default function NotionDetailsPage() {
                   <div className="grid gap-3">
                     {filteredBlogs.map((blog) => (
                       <div
-                        key={blog._id}
+                        key={blog._id.toString()}
                         className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors border-l-4 border-l-orange-500"
                       >
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="font-medium text-gray-800">{blog.title}</p>
+                        <div  className="flex justify-between items-start mb-2">
+                          <Link href={`/blogs/${blog._id.toString()}`} className="font-medium text-gray-800">{blog.title}</Link>
                           <span className={`text-xs font-medium px-2 py-1 rounded-full ${
                             getBlogType(blog) === "entrepreneur"
                               ? "bg-orange-100 text-orange-700"

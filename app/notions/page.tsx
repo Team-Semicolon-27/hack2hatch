@@ -220,7 +220,7 @@ export default function NotionsListPage() {
         
         <div className="mt-10 text-center">
           <button
-            onClick={() => router.push("/create-notion")}
+            onClick={() => router.push("/my-notions/add")}
             className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center"
           >
             <svg

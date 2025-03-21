@@ -11,6 +11,7 @@ export default withAuth(
       pathname.startsWith("/login") || 
       pathname.startsWith("/auth/signup/entrepreneur") || 
       pathname.startsWith("/auth/signup/mentor") ||
+      pathname.startsWith("/welcome") ||
       pathname.startsWith("/verify");
 
 
