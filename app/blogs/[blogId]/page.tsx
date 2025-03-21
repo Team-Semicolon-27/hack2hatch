@@ -76,14 +76,21 @@ const SingleBlogPost = () => {
     }
   }, [blogId]);
   
+  if (!blog) {
+    return <div className="flex justify-center items-center min-h-screen bg-gray-100">Blog post not found</div>;
+  }
+  
+  
+  const isLikedByCurrentUser = userId && blog.likes.some(
+    like => like.user._id.toString() === userId
+  );
+  
+  
   const handleLike = async () => {
     try {
-     
+      if (isLikedByCurrentUser) {
       
-      
-      
-      // const updatedBlog = await response.json();
-      // setBlog(updatedBlog);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to like post');
     }
@@ -120,11 +127,6 @@ const SingleBlogPost = () => {
   if (error) {
     return <div className="flex justify-center items-center min-h-screen bg-gray-100 text-orange-600">{error}</div>;
   }
-  
-  if (!blog) {
-    return <div className="flex justify-center items-center min-h-screen bg-gray-100">Blog post not found</div>;
-  }
-  
   
   const getFileName = (url: string): string => {
     const parts = url.split('/');
@@ -256,10 +258,6 @@ const SingleBlogPost = () => {
       </div>
     );
   };
-  
-  const isLikedByCurrentUser = userId && blog.likes.some(
-    like => like.user._id.toString() === userId
-  );
   
   return (
     <div className="bg-white min-h-screen">

@@ -98,7 +98,7 @@ export default function AddNotionPage() {
               </label>
               <div className="mb-4">
                 <CldUploadButton
-                  uploadPreset="notions"
+                  uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
                   onUpload={handleUpload}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg font-medium transition-colors inline-flex items-center"
                 >
