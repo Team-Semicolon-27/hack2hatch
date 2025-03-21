@@ -91,6 +91,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{id: s
             },
             {
               $unwind: '$author',
+            },
+            {
+              $project: {
+                author: 1,
+                title: 1,
+                content: 1,
+                tags: 1,
+                attachments: 1,
+                likes: { $size: "$likes"},
+                comments: { $size: "$comments" },
+                links: 1,
+              }
             }
           ]
         }
@@ -121,6 +133,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{id: s
             },
             {
               $unwind: '$author',
+            },
+            {
+              $project: {
+                author: 1,
+                title: 1,
+                content: 1,
+                tags: 1,
+                attachments: 1,
+                likes: { $size: "$likes"},
+                comments: { $size: "$comments" },
+                links: 1,
+              }
             }
           ]
         }
