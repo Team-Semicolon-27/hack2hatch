@@ -1,43 +1,50 @@
-import { NextResponse } from "next/server";
-import { withAuth } from "next-auth/middleware";
-
-export default withAuth(
-  function middleware(req) {
-
-    const { pathname } = req.nextUrl;
-
-    // Check if the route is an authentication page
-    const isAuthPage = 
-      pathname.startsWith("/login") || 
-      pathname.startsWith("/auth/signup/entrepreneur") || 
-      pathname.startsWith("/auth/signup/mentor") ||
-      pathname.startsWith("/welcome") ||
-      pathname.startsWith("/verify");
-
-
-    const session = req.nextauth?.token;
-
-    if (session && isAuthPage) {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-
-    if (!session && !isAuthPage) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-
-    if (session && !session.isVerified && pathname !== "/verify") {
-      return NextResponse.redirect(new URL("/verify", req.url));
-    }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token, // Allow only authenticated users
-    },
-  }
-);
+import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+export { default } from 'next-auth/middleware';
 
 export const config = {
-  matcher: "/:path*", // Apply middleware to ALL routes for debugging
+  matcher: [
+    '/dashboard/:path*',
+    '/sign-in',
+    '/sign-up',
+    '/',
+    '/verify/:path*',
+    '/clubs/:path*', 
+    '/events/:path*', 
+    '/resources/:path*',
+    '/user/:path*',
+    '/issues/:path*'
+  ],
 };
+
+export async function middleware(request: NextRequest) {
+  const token = await getToken({ req: request });
+  const url = request.nextUrl;
+
+  console.log("Session Data:", token);
+  console.log("Current Path:", url.pathname);
+
+  const isAuthPage =
+    url.pathname.startsWith("/auth/signup/") ||
+    url.pathname.startsWith("/login/") ||
+    url.pathname === "/welcome" ||
+    url.pathname === "/verify";
+
+  if (token && isAuthPage) {
+    console.log("Redirecting authenticated user from auth page -> /");
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  if (!token && !isAuthPage) {
+    console.log("Redirecting unauthenticated user -> /sign-in");
+    return NextResponse.redirect(new URL('/welcome', request.url));
+  }
+
+
+  if (token && token.isVerified === false && url.pathname !== "/verify") {
+    console.log("Redirecting unverified user -> /verify");
+    return NextResponse.redirect(new URL('/verify', request.url));
+  }
+
+  return NextResponse.next();
+}
