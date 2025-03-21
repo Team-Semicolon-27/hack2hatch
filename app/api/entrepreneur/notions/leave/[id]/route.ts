@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{id:
       await NotionModel.updateOne({
         _id: objectId
       }, {
-        $pull: {members: userId},
+        $pull: {members: userId, teamMembers: userId}
       })
       
       await EntrepreneurModel.updateOne(

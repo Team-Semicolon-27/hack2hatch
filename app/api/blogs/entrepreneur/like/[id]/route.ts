@@ -30,20 +30,37 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{id:
     
     const objectId = new mongoose.Types.ObjectId(id);
     
-    const blog = await BlogEModel.updateOne(
-      { _id: objectId },
-      { $addToSet: { likes: userId } },
-    );
-    
-    if (!blog) {
-      return NextResponse.json({ error: "blog not found" }, { status: 404 });
+    if (user.userType === "entrepreneur") {
+      const blog = await BlogEModel.updateOne(
+        { _id: objectId },
+        { $addToSet: { likes: { user: userId, userType: "Entrepreneur" } } } ,
+      );
+      
+      if (!blog) {
+        return NextResponse.json({ error: "blog not found" }, { status: 404 });
+      }
+      
+      if (!blog.modifiedCount) {
+        return NextResponse.json({ error: "already not liked" }, { status: 403 });
+      }
+      
+      return NextResponse.json({ status: 200 });
+    } else {
+      const blog = await BlogEModel.updateOne(
+        { _id: objectId },
+        { $addToSet: { likes: { user: userId, userType: "Mentor" } } } ,
+      );
+      
+      if (!blog) {
+        return NextResponse.json({ error: "blog not found" }, { status: 404 });
+      }
+      
+      if (!blog.modifiedCount) {
+        return NextResponse.json({ error: "already not liked" }, { status: 403 });
+      }
+      
+      return NextResponse.json({ status: 200 });
     }
-    
-    if (!blog.modifiedCount) {
-      return NextResponse.json({ error: "already liked" }, { status: 403 });
-    }
-    
-    return NextResponse.json({ status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: error },
@@ -78,20 +95,37 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{id
     
     const objectId = new mongoose.Types.ObjectId(id);
     
-    const blog = await BlogEModel.updateOne(
-      { _id: objectId },
-      { $pull: { likes: userId } },
-    );
-    
-    if (!blog) {
-      return NextResponse.json({ error: "blog not found" }, { status: 404 });
+    if (user.userType === "entrepreneur") {
+      const blog = await BlogEModel.updateOne(
+        { _id: objectId },
+        { $pull: { likes: { user: userId, userType: "Entrepreneur" } } } ,
+      );
+      
+      if (!blog) {
+        return NextResponse.json({ error: "blog not found" }, { status: 404 });
+      }
+      
+      if (!blog.modifiedCount) {
+        return NextResponse.json({ error: "already not liked" }, { status: 403 });
+      }
+      
+      return NextResponse.json({ status: 200 });
+    } else {
+      const blog = await BlogEModel.updateOne(
+        { _id: objectId },
+        { $pull: { likes: { user: userId, userType: "Mentor" } } } ,
+      );
+      
+      if (!blog) {
+        return NextResponse.json({ error: "blog not found" }, { status: 404 });
+      }
+      
+      if (!blog.modifiedCount) {
+        return NextResponse.json({ error: "already not liked" }, { status: 403 });
+      }
+      
+      return NextResponse.json({ status: 200 });
     }
-    
-    if (!blog.modifiedCount) {
-      return NextResponse.json({ error: "already not liked" }, { status: 403 });
-    }
-    
-    return NextResponse.json({ status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: error },
