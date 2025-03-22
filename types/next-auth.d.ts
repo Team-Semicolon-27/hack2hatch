@@ -9,7 +9,7 @@ declare module "next-auth" {
       username: string;
       name: string;
       profileImage: string;
-      userType: "profile" | "mentor";
+      userType: "entrepreneur" | "mentor";
       isVerified: boolean;
       interestedTopics :string[];
     } & DefaultSession["user"];
@@ -23,7 +23,7 @@ declare module "next-auth/jwt" {
     username: string;
     name: string;
     profileImage: string;
-    userType: "profile" | "mentor";
+    userType: "entrepreneur" | "mentor";
     isVerified: boolean;
     interestedTopics :string[];
   }

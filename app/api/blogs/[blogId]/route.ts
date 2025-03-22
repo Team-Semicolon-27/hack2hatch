@@ -9,6 +9,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ blogId: 
     try {
         await connectDB();
         const { blogId } = await params;
+        let type = "entrepreneur";
         
         let blog = await BlogEModel
             .findById(blogId)
@@ -22,13 +23,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ blogId: 
                 .populate('author', 'name email')
                 .populate('likes.user', 'name email')
                 .exec();
+            
+            type = "mentor"
         }
         
         if (!blog) {
             return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });
         }
         
-        return NextResponse.json(blog, { status: 200 });
+        return NextResponse.json({ blog, type}, { status: 200 });
     } catch (error) {
         console.error('Error fetching blog:', error);
         return NextResponse.json({

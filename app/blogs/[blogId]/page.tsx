@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import {useSession} from "next-auth/react";
 import mongoose from "mongoose";
+import axios from "axios";
 
 // Types based on your models
 interface User {
@@ -44,26 +45,27 @@ interface Blog {
 const SingleBlogPost = () => {
   const session = useSession();
   const userId = session?.data?.user?.id;
+  const userType = session?.data?.user?.userType;
   const params = useParams();
   const blogId = params.blogId as string;
   
+  const [blogType, setType] = useState("")
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [commentContent, setCommentContent] = useState('');
+  const [isLikedByCurrentUser, setIsLikedByCurrentUser] = useState(false);
   
   useEffect(() => {
     const fetchBlogPost = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/blogs/${blogId}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch blog post');
+        const response = await axios.get(`/api/blogs/${blogId}`);
+        if (response.status === 200) {
+          setBlog(response.data.blog);
+          setType(response.data.type);
+          setIsLikedByCurrentUser(response.data.blog.likes.some((like: Like) => like.user._id.toString() === userId));
         }
-        
-        const data = await response.json();
-        setBlog(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -80,15 +82,35 @@ const SingleBlogPost = () => {
     return <div className="flex justify-center items-center min-h-screen bg-gray-100">Blog post not found</div>;
   }
   
-  
-  const isLikedByCurrentUser = userId && blog.likes.some(
-    like => like.user._id.toString() === userId
-  );
-  
-  
   const handleLike = async () => {
     try {
-      if (isLikedByCurrentUser) {
+      if (blogType === "entrepreneur") {
+        if (!isLikedByCurrentUser) {
+          const res = await axios.patch(`/api/blogs/entrepreneur/like/${blogId}`)
+          if (res.status === 200) {
+            if (userType === "entrepreneur") {
+              // @ts-expect-error abc
+              setBlog((prev) => (prev ? {...prev, likes: [...prev.likes, {user: userId, userType: "Entrepreneur" }] } : null));
+            } else {
+              // @ts-expect-error abc
+              setBlog((prev) => (prev ? {...prev, likes: [...prev.likes, {user: userId, userType: "Mentor" }] } : null));
+            }
+            setIsLikedByCurrentUser(true);
+          }
+        } else {
+          const res = await axios.delete(`/api/blogs/entrepreneur/like/${blogId}`)
+          if (res.status === 200) {
+            if (userType === "entrepreneur") {
+              // @ts-expect-error abc
+              setBlog((prev) => (prev ? {...prev, likes: prev.likes.filter((like) => like.user !== userId && userType !== "Entrepreneur") } : null));
+            } else {
+              // @ts-expect-error abc
+              setBlog((prev) => (prev ? {...prev, likes: prev.likes.filter((like) => like.user !== userId && userType !== "Mentor") } : null));
+            }
+            setIsLikedByCurrentUser(false);
+          }
+        }
+      } else {
       
       }
     } catch (err) {
