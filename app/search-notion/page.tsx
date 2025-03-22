@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, {useState, useEffect, Suspense} from "react"
 import axios from "axios"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -17,6 +17,14 @@ interface Notion {
   title: string
   logo: string
   description: string
+}
+
+export default function NotionPage() {
+  return (
+    <Suspense fallback={null}>
+      <SearchNotionsPage />
+    </Suspense>
+  )
 }
 
 const SearchNotionsPage = () => {
@@ -289,5 +297,3 @@ const SearchNotionsPage = () => {
     </div>
   )
 }
-
-export default SearchNotionsPage

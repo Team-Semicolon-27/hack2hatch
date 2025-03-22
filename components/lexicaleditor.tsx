@@ -1,4 +1,3 @@
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
@@ -25,7 +24,6 @@ interface LexicalEditorProps {
 }
 
 const MyOnChangePlugin = ({ onChange }: { onChange: (content: string) => void }) => {
-  const [editor] = useLexicalComposerContext();
   
   return (
     <OnChangePlugin
@@ -38,7 +36,7 @@ const MyOnChangePlugin = ({ onChange }: { onChange: (content: string) => void })
   );
 };
 
-export default function LexicalEditor({ value, onChange }: LexicalEditorProps) {
+export default function LexicalEditor({ onChange }: LexicalEditorProps) {
   const initialConfig = {
     namespace: 'LexicalEditor',
     theme: {

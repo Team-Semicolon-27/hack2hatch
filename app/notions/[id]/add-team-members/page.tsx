@@ -1,13 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import mongoose from "mongoose";
+import {useParams} from "next/navigation";
 
-const AddTeamMembersPage = ({ params }: { params: { id: string } }) => {
+interface User {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  email: string;
+}
+
+const AddTeamMembersPage = () => {
+  const params = useParams();
   const notionId = params.id;
   console.log("Notion ID:", notionId);
 
   const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const searchUsers = async (query: string) => {
@@ -67,13 +76,13 @@ const AddTeamMembersPage = ({ params }: { params: { id: string } }) => {
 
       <ul className="mt-4">
         {searchResults.map((user) => (
-          <li key={user._id} className="flex justify-between items-center p-2 border-b">
+          <li key={user._id.toString()} className="flex justify-between items-center p-2 border-b">
             <div>
               <p className="font-semibold">{user.name}</p>
               <p className="text-sm text-gray-500">{user.email}</p>
             </div>
             <button
-              onClick={() => addMember(user._id)}
+              onClick={() => addMember(user._id.toString())}
               className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
             >
               Add

@@ -1,9 +1,10 @@
+// adding or removing like from mentor comment in BlogE
 import {NextRequest, NextResponse} from "next/server";
 import connectDB from "@/lib/db";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/app/api/auth/[...nextauth]/options";
 import mongoose from "mongoose";
-import {EntrepreneurModel, MentorModel} from "@/model/model";
+import {MentorCommentModel} from "@/model/model";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{id: string}> }) {
   try {
@@ -18,6 +19,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{id:
     
     const userId = new mongoose.Types.ObjectId(user.id);
     
+    //comment id
     const { id } = await params;
     
     if (!id) {
@@ -30,40 +32,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{id:
     
     const objectId = new mongoose.Types.ObjectId(id);
     
-    if (user.userType === "entrepreneur") {
-      const otherUser = await EntrepreneurModel.updateOne(
-        { _id: objectId },
-        { $addToSet: { followers: userId } },
-      );
-      
-      if (!otherUser) {
-        return NextResponse.json({ error: "no user found" }, { status: 404});
-      }
-      
-      await EntrepreneurModel.updateOne(
-        { _id: userId },
-        { $addToSet: { followings: objectId } },
-      );
-      
-      return NextResponse.json({ status: 200 });
-    } else {
-      const otherUser = await EntrepreneurModel.updateOne(
-        { _id: objectId },
-        { $addToSet: { mentorFollowers: userId } },
-      );
-      
-      if (!otherUser) {
-        return NextResponse.json({ error: "no user found" }, { status: 404});
-      }
-      
-      await MentorModel.updateOne(
-        { _id: userId },
-        { $addToSet: { followings: objectId } },
-      );
-      
-      return NextResponse.json({ status: 200 });
+    const comment = await MentorCommentModel.updateOne({
+        _id: objectId
+      },
+      {
+        $addToSet: { likes: userId }
+      })
+    
+    if (!comment) {
+      return NextResponse.json({ error: "comment not found" }, { status: 500 });
     }
     
+    return NextResponse.json({ status: 200 })
   } catch (error) {
     return NextResponse.json(
       { error: error },
@@ -73,6 +53,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{id:
 }
 
 
+// delete for removing like from it
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{id: string}> }) {
   try {
     await connectDB();
@@ -86,6 +67,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{id
     
     const userId = new mongoose.Types.ObjectId(user.id);
     
+    //comment id
     const { id } = await params;
     
     if (!id) {
@@ -98,40 +80,18 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{id
     
     const objectId = new mongoose.Types.ObjectId(id);
     
-    if (user.userType === "entrepreneur") {
-      const otherUser = await EntrepreneurModel.updateOne(
-        { _id: objectId },
-        { $pull: { followers: userId } },
-      );
-      
-      if (!otherUser) {
-        return NextResponse.json({ error: "no user found" }, { status: 404});
-      }
-      
-      await EntrepreneurModel.updateOne(
-        { _id: userId },
-        { $pull: { followings: objectId } },
-      );
-      
-      return NextResponse.json({ status: 200 });
-    } else {
-      const otherUser = await EntrepreneurModel.updateOne(
-        { _id: objectId },
-        { $pull: { mentorFollowers: userId } },
-      );
-      
-      if (!otherUser) {
-        return NextResponse.json({ error: "no user found" }, { status: 404});
-      }
-      
-      await MentorModel.updateOne(
-        { _id: userId },
-        { $pull: { followings: objectId } },
-      );
-      
-      return NextResponse.json({ status: 200 });
+    const comment = await MentorCommentModel.updateOne({
+        _id: objectId
+      },
+      {
+        $pull: { likes: userId }
+      })
+    
+    if (!comment) {
+      return NextResponse.json({ error: "comment not created" }, { status: 500 });
     }
     
+    return NextResponse.json({ status: 200 })
   } catch (error) {
     return NextResponse.json(
       { error: error },
@@ -139,4 +99,3 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{id
     )
   }
 }
-

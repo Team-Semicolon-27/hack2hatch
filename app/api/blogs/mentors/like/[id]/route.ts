@@ -1,9 +1,9 @@
 import {NextRequest, NextResponse} from "next/server";
 import connectDB from "@/lib/db";
 import {getServerSession} from "next-auth";
-import {authOptions} from "@/app/api/auth/[...nextauth]/route";
+import {authOptions} from "@/app/api/auth/[...nextauth]/options";
 import mongoose from "mongoose";
-import {BlogEModel, BlogMModel} from "@/model/model";
+import {BlogMModel} from "@/model/model";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{id: string}> }) {
   try {

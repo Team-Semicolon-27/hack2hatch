@@ -2,7 +2,7 @@ import {NextResponse} from "next/server";
 import { BlogEModel, NotionModel } from "@/model/model";
 import connectDB from "@/lib/db"
 import { getServerSession, User } from "next-auth";
-import {authOptions} from "@/app/api/auth/[...nextauth]/route"
+import {authOptions} from "@/app/api/auth/[...nextauth]/options"
 import { aiWrapper } from "@/lib/aiwrapper";
 import mongoose from "mongoose";
 

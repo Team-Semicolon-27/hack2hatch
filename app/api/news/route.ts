@@ -2,7 +2,7 @@ import connectDB from "@/lib/db";
 import { EntrepreneurModel, NewsModel } from "@/model/model";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "../auth/[...nextauth]/options";
 import { Buffer } from "buffer";
 
 const TWITTER_BEARER_TOKEN = process.env.X_BEARER_TOKEN;
@@ -70,7 +70,8 @@ const fetchTwitterPosts = async () => {
       (data.includes?.users || []).map((user: { id: string; name: string }) => [user.id, user])
     );
     
-    const tweets = data.data.map((tweet: any) => {
+    //@ts-expect-error aaa
+    const tweets = data.data.map((tweet) => {
       const user = usersMap.get(tweet.author_id);
       return {
         platform: "Twitter",
@@ -108,7 +109,7 @@ type Post = {
   subreddit?: string; // Only for Reddit posts
 };
 
-const fetchRedditPosts = async (userId: string): Promise<Post[]> => {
+const fetchRedditPosts = async (): Promise<Post[]> => {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
@@ -124,9 +125,8 @@ const fetchRedditPosts = async (userId: string): Promise<Post[]> => {
       console.warn("User has no interested topics.");
       return [];
     }
-
+    
     const subreddits = userProfile.interestedTopics
-      //@ts-ignore
       .map(topic => topicToSubredditMap[topic])
       .filter(Boolean);
 
@@ -172,7 +172,8 @@ const fetchRedditPosts = async (userId: string): Promise<Post[]> => {
       const data = await response.json();
       if (!data?.data?.children) continue;
 
-      const posts = data.data.children.map((post: any): Post => ({
+      // @ts-expect-error abc
+      const posts = data.data.children.map((post): Post => ({
         platform: "Reddit",
         title: post.data.title,
         type: "text",
@@ -197,7 +198,7 @@ const fetchRedditPosts = async (userId: string): Promise<Post[]> => {
 };
 
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
@@ -211,7 +212,7 @@ export async function GET(req: Request) {
 
     const [twitterPosts, redditPosts] = await Promise.all([
       fetchTwitterPosts(),
-      fetchRedditPosts(userId),
+      fetchRedditPosts(),
     ]);
 
     return NextResponse.json([...twitterPosts, ...redditPosts].slice(0, 50));

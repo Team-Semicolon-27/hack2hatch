@@ -1,8 +1,8 @@
 import {NextResponse} from "next/server";
-import { BlogMModel, NotionModel } from "../../../../model/model";
+import { BlogMModel, NotionModel } from "@/model/model";
 import connectDB from "@/lib/db"
 import { getServerSession, User } from "next-auth";
-import {authOptions} from "@/app/api/auth/[...nextauth]/route"
+import {authOptions} from "@/app/api/auth/[...nextauth]/options"
 import { aiWrapper } from "@/lib/aiwrapper";
 
 export async function POST(req: Request) {
@@ -129,7 +129,6 @@ export async function DELETE(req: Request) {
       console.error('Error deleting blog:', error);
       return NextResponse.json({ 
         error: 'Failed to delete blog post', 
-        details: (error as any).message 
       }, { status: 500 });
     }
   }
@@ -159,7 +158,6 @@ export async function GET(req: Request) {
       console.error('Error fetching blog:', error);
       return NextResponse.json({ 
         error: 'Failed to fetch blog post', 
-        details: (error as any).message 
       }, { status: 500 });
     }
   }

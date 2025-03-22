@@ -2,10 +2,10 @@ import connectDB from "@/lib/db";
 import { NotionModel } from "@/model/model";
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   await connectDB
 
-  const { id: notionId } = params;
+  const { id: notionId } = await params;
   const { userId } = await req.json();
 
   if (!notionId || !userId) {

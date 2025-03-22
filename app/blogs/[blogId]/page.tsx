@@ -31,6 +31,7 @@ interface Blog {
   attachments: string[];
   likes: mongoose.Types.ObjectId[];
   comments: CommentType[];
+  mentorComments: CommentType[];
   links: string[];
   tags: string[];
   blogAI: string;
@@ -129,7 +130,11 @@ const SingleBlogPost = () => {
       if (blogType === "entrepreneur") {
         const res = await axios.post(`/api/blogs/entrepreneur/comment/${blogId}`, {content: commentContent})
         if (res.status === 200) {
-          setBlog((prev) => (prev ? { ...prev, comments: [...prev.comments, res.data]} : null))
+          if (res.data.type === "entrepreneur") {
+            setBlog((prev) => (prev ? { ...prev, comments: [...prev.comments, res.data.newComment]} : null))
+          } else {
+            setBlog((prev) => (prev ? { ...prev, mentorComments: [...prev.comments, res.data.newComment]} : null))
+          }
           setCommentContent('');
         } else {
           alert("failed to add comment")
@@ -137,7 +142,11 @@ const SingleBlogPost = () => {
       } else {
         const res = await axios.post(`/api/blogs/mentors/comment/${blogId}`, {content: commentContent})
         if (res.status === 200) {
-          setBlog((prev) => (prev ? { ...prev, comments: [...prev.comments, res.data]} : null))
+          if (res.data.type === "entrepreneur") {
+            setBlog((prev) => (prev ? { ...prev, comments: [...prev.comments, res.data.newComment]} : null))
+          } else {
+            setBlog((prev) => (prev ? { ...prev, mentorComments: [...prev.comments, res.data.newComment]} : null))
+          }
           setCommentContent('');
         } else {
           alert("failed to add comment")
@@ -145,6 +154,42 @@ const SingleBlogPost = () => {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add comment');
+    }
+  };
+  
+  
+  const handleLikeMentorComment = async (commentId: string,  liked: boolean) => {
+    if (!userId) return
+    try {
+      if (!liked) {
+        const res = await axios.patch(`/api/blogs/entrepreneur/mentorComment/${commentId}`)
+        if (res.status === 200) {
+          setBlog((prev) => (prev ? {...prev, comments: prev.comments.filter(comment => {
+              if (comment._id.toString() === commentId) {
+                return {...comment, likes: [...comment.likes, userId]};
+              }
+              return comment
+            })}: null))
+          router.refresh();
+        } else {
+          alert("failed to like comment");
+        }
+      } else {
+        const res = await axios.delete(`/api/blogs/entrepreneur/mentorComment/${commentId}`)
+        if (res.status === 200) {
+          setBlog((prev) => (prev ? {...prev, comments: prev.comments.filter(comment => {
+              if (comment._id.toString() === commentId) {
+                return {...comment, likes: comment.likes.filter(like => like.toString() !== userId.toString())};
+              }
+              return comment
+            })}: null))
+          router.refresh();
+        } else {
+          alert("failed to like comment");
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to like comment');
     }
   };
   
@@ -178,8 +223,6 @@ const SingleBlogPost = () => {
           alert("failed to like comment");
         }
       }
-      // const updatedBlog = await response.json();
-      // setBlog(updatedBlog);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to like comment');
     }
@@ -475,12 +518,73 @@ const SingleBlogPost = () => {
               </div>
               
               {/* Comments list */}
-              {blog.comments.length === 0 ? (
+              {(blog.comments.length === 0&& blog.mentorComments.length === 0) ? (
                 <div className="text-center py-8 border-t border-gray-200">
                   <p className="text-gray-500">No replies yet. Be the first to reply!</p>
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {blog.mentorComments.map((comment) => (
+                    <div key={comment._id.toString()} className="flex pt-4 border-t border-gray-200">
+                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold mr-3 flex-shrink-0">
+                        {comment.author.name.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center">
+                          <Link href={`../../profile/${comment.author._id.toString()}`} className="font-bold text-gray-900 mr-2">{comment.author.name}</Link>
+                          <p className="text-gray-500 text-sm">@{comment.author.name.toLowerCase().replace(/\s+/g, '')}</p>
+                          <span className="mx-1 text-gray-500">·</span>
+                          <p className="text-gray-500 text-sm">
+                            {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                          </p>
+                        </div>
+                        
+                        <p className="text-gray-900 mt-1">{comment.content}</p>
+                        
+                        <div className="flex mt-2 -ml-2">
+                          <button className="p-2 text-gray-500 rounded-full hover:bg-blue-50 hover:text-blue-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
+                            </svg>
+                          </button>
+                          
+                          <button
+                            onClick={() => handleLikeMentorComment(comment._id.toString(), comment.likes.some(like => userId && like.toString() === userId.toString()))}
+                            className={`p-2 rounded-full flex items-center ${
+                              comment.likes.some(like => userId && like.toString() === userId.toString())
+                                ? 'text-orange-600'
+                                : 'text-gray-500 hover:text-orange-600 hover:bg-orange-50'
+                            }`}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill={comment.likes.some(like => userId && like.toString() === userId.toString())
+                                ? "currentColor"
+                                : "none"
+                              }
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="w-4 h-4"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                            </svg>
+                            {comment.likes.length > 0 && (
+                              <span className="ml-1 text-xs">{comment.likes.length}</span>
+                            )}
+                          </button>
+                          
+                          <button className="p-2 text-gray-500 rounded-full hover:bg-green-50 hover:text-green-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 0m-3.935 0l-9.566-5.314m9.566-4.064a2.25 2.25 0 10-3.935 0" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  
                   {blog.comments.map((comment) => (
                     <div key={comment._id.toString()} className="flex pt-4 border-t border-gray-200">
                       <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold mr-3 flex-shrink-0">
@@ -488,7 +592,7 @@ const SingleBlogPost = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center">
-                          <p className="font-bold text-gray-900 mr-2">{comment.author.name}</p>
+                          <Link href={`../../profile/${comment.author._id.toString()}`} className="font-bold text-gray-900 mr-2">{comment.author.name}</Link>
                           <p className="text-gray-500 text-sm">@{comment.author.name.toLowerCase().replace(/\s+/g, '')}</p>
                           <span className="mx-1 text-gray-500">·</span>
                           <p className="text-gray-500 text-sm">

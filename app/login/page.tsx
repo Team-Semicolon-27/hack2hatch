@@ -80,7 +80,7 @@ export default function Login() {
 
         {/* Signup Link */}
         <p className="text-center text-gray-600 text-sm mt-6">
-          Don't have an account?{" "}
+          Don&#39;t have an account?{" "}
           <a href="/auth/signup/entrepreneur" className="text-orange-600 font-medium hover:underline transition-all">
             Sign up
           </a>

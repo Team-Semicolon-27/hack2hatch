@@ -3,7 +3,7 @@ import {EntrepreneurModel, NotionModel} from "@/model/model";
 import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import {getServerSession} from "next-auth";
-import {authOptions} from "@/app/api/auth/[...nextauth]/route";
+import {authOptions} from "@/app/api/auth/[...nextauth]/options";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{id: string}> }) {
   try {

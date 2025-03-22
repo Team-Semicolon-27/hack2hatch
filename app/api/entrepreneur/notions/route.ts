@@ -2,8 +2,8 @@ import {NextRequest, NextResponse} from "next/server";
 import connectDB from "@/lib/db";
 import {EntrepreneurModel, NotionModel, aiBloggerModel} from "@/model/model";
 import {getServerSession} from "next-auth";
-import {authOptions} from "@/app/api/auth/[...nextauth]/route";
-import mongoose, { ObjectId } from "mongoose";
+import {authOptions} from "@/app/api/auth/[...nextauth]/options";
+import mongoose from "mongoose";
 import { aiWrapper } from "@/lib/aiwrapper";
 
 export async function GET() {

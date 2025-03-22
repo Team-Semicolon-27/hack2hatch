@@ -4,7 +4,7 @@ import type React from "react"
 
 import axios from "axios"
 import { useSession } from "next-auth/react"
-import { MessageCircle, Send, X, Loader2, Newspaper, Bot } from "lucide-react"
+import { Send, X, Loader2, Newspaper, Bot } from "lucide-react"
 
 interface Chat {
   userInput: string
