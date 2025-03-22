@@ -102,6 +102,15 @@ export default function NotionDetailsPage() {
       setActionLoading(false)
     }
   }
+
+  const handleAddTeamMember = () => {
+    if (!id) {
+      console.error("Notion ID is missing");
+      return;
+    }
+  
+    router.push(`/notion/${id}/add-team-members`);
+  };
   
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this notion? This action cannot be undone.")) {
@@ -723,6 +732,30 @@ export default function NotionDetailsPage() {
                 Not Authorized to Chat
               </button>
             )}
+
+{notion.isOwner && (
+  <button
+    onClick={handleAddTeamMember} // Define this function accordingly
+    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-4 w-4 mr-1"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 4v16m8-8H4"
+      />
+    </svg>
+    Add Team Members
+  </button>
+)}
+
 
           </div>
         </div>
