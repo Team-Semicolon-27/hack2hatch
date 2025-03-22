@@ -6,7 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import {useSession} from "next-auth/react";
 import mongoose from "mongoose";
 import axios from "axios";
-import {router} from "next/client";
+import Link from "next/link";
 
 // Types based on your models
 interface User {
@@ -350,10 +350,10 @@ const SingleBlogPost = () => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline justify-between">
-              <div>
+              <Link href={`../../profile/${blog.author._id.toString()}`}>
                 <p className="font-bold text-gray-900 hover:underline">{blog.author.name}</p>
                 <p className="text-gray-500 text-sm">@{blog.author.name.toLowerCase().replace(/\s+/g, '')}</p>
-              </div>
+              </Link>
             </div>
             
             {/* Attachments Carousel - MOVED ABOVE CONTENT */}
