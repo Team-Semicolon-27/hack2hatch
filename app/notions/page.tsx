@@ -4,8 +4,10 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import type mongoose from "mongoose"
+import Link from "next/link";
 
 interface User {
+  _id: mongoose.Types.ObjectId;
   name: string
   username: string
   profileImage: string
@@ -140,7 +142,6 @@ export default function NotionsListPage() {
               <div
                 key={notion._id.toString()}
                 className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
-                onClick={() => router.push(`/notions/${notion._id}`)}
               >
                 <div className="h-48 overflow-hidden relative">
                   <img
@@ -160,7 +161,7 @@ export default function NotionsListPage() {
                 </div>
                 
                 <div className="p-5">
-                  <h2 className="text-xl font-bold text-gray-800 mb-3 line-clamp-1">{notion.title}</h2>
+                  <h2 onClick={() => router.push(`/notions/${notion._id}`)} className="text-xl font-bold text-gray-800 mb-3 line-clamp-1">{notion.title}</h2>
                   
                   <div className="flex items-center">
                     <img
@@ -172,10 +173,10 @@ export default function NotionsListPage() {
                         target.src = "/placeholder.svg?height=40&width=40"
                       }}
                     />
-                    <div className="ml-2">
+                    <Link href={`../profile/${notion.owner._id.toString()}`} className="ml-2">
                       <p className="text-sm font-medium text-gray-800">{notion.owner.name}</p>
                       <p className="text-xs text-gray-500">@{notion.owner.username}</p>
-                    </div>
+                    </Link>
                   </div>
                 </div>
                 

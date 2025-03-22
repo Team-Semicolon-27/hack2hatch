@@ -129,13 +129,7 @@ const BlogESchema: Schema<BlogE> = new Schema(
     title: { type: String, required: true },
     content: { type: String, required: true },
     attachments: [{ type: String }],
-    likes: [
-      {
-        user: { type: Schema.Types.ObjectId, required: true, refPath: "likes.userType" },
-        userType: { type: String, enum: ["Entrepreneur", "Mentor"], required: true },
-      },
-    ],
-    
+    likes: [ { type: Schema.Types.ObjectId, }, ],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     links: [{ type: String }],
     tags: [{ type: String }],
@@ -164,13 +158,7 @@ const BlogMSchema: Schema<BlogM> = new Schema(
     title: { type: String, required: true },
     content: { type: String, required: true },
     attachments: [{ type: String }],
-    likes: [
-      {
-        user: { type: Schema.Types.ObjectId, required: true, refPath: "likes.userType" },
-        userType: { type: String, enum: ["Entrepreneur", "Mentor"], required: true },
-      },
-    ],
-    
+    likes: [ { type: Schema.Types.ObjectId } ],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     links: [{ type: String }],
     tags: [{ type: String }],
@@ -190,13 +178,7 @@ const CommentSchema: Schema<Comment> = new Schema(
   {
     author: { type: Schema.Types.ObjectId, ref: "Entrepreneur", required: true },
     content: { type: String, required: true },
-    likes: [
-      {
-        user: { type: Schema.Types.ObjectId, required: true, refPath: "likes.userType" },
-        userType: { type: String, enum: ["Entrepreneur", "Mentor"], required: true },
-      },
-    ],
-    
+    likes: [],
   },
   { timestamps: true }
 );
@@ -233,20 +215,24 @@ const NewsSchema: Schema<News> = new Schema(
 
 export interface aiBlogger extends Document {
   textToPassToAi: {
-    idOfNotion: mongoose.Schema.Types.ObjectId;
-    text: string;
+    [key: string]: {
+      idOfNotion: mongoose.Schema.Types.ObjectId;
+      text: string;
+    };
   };
 }
 
 const aiBloggerSchema: Schema<aiBlogger> = new Schema(
   {
-    textToPassToAi:{
-      idOfNotion: { type: Schema.Types.ObjectId, ref: "Notion", required: true },
-      text: { type: String, required: true },
+    textToPassToAi: {
+      type: Map,
+      of: new Schema({
+        idOfNotion: { type: Schema.Types.ObjectId, ref: "Notion", required: true },
+        text: { type: String, required: true }
+      })
     }
   }
 )
-
 export const aiBloggerModel: Model<aiBlogger> =
   mongoose.models.aiBlogger || mongoose.model<aiBlogger>("aiBlogger", aiBloggerSchema);
 
