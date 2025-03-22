@@ -80,6 +80,7 @@ const MentorSchema: Schema<Mentor> = new Schema(
   { timestamps: true }
 );
 
+
 export interface Notion extends Document {
   owner: mongoose.Schema.Types.ObjectId;
   title: string;
@@ -109,6 +110,7 @@ const NotionSchema: Schema<Notion> = new Schema(
   { timestamps: true }
 );
 
+NotionSchema.index({ title: 'text', description: 'text', aiDescription: 'text' });
 export interface BlogE extends Document {
   author: mongoose.Schema.Types.ObjectId;
   notionId: mongoose.Schema.Types.ObjectId;
@@ -215,20 +217,21 @@ const NewsSchema: Schema<News> = new Schema(
 
 export interface aiBlogger extends Document {
   textToPassToAi: {
-    idOfNotion: mongoose.Schema.Types.ObjectId;
+    id: mongoose.Schema.Types.ObjectId;
     text: string;
-  };
+  }[];
 }
 
 const aiBloggerSchema: Schema<aiBlogger> = new Schema(
   {
-    textToPassToAi:{
-      idOfNotion: { type: Schema.Types.ObjectId, ref: "Notion", required: true },
-      text: { type: String, required: true },
-    }
+    textToPassToAi: [
+      {
+        id: { type: Schema.Types.ObjectId, ref: "Notion", required: true },
+        text: { type: String, required: true }
+      }
+    ]
   }
-)
-
+);
 export const aiBloggerModel: Model<aiBlogger> =
   mongoose.models.aiBlogger || mongoose.model<aiBlogger>("aiBlogger", aiBloggerSchema);
 

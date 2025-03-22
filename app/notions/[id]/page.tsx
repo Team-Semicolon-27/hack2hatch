@@ -110,7 +110,7 @@ export default function NotionDetailsPage() {
       return;
     }
   
-    router.push(`/notion/${id}/add-team-members`);
+    router.replace(`/notion/${id}/add-team-members`);
   };
   
   const handleDelete = async () => {
@@ -252,8 +252,31 @@ export default function NotionDetailsPage() {
                     <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">Member</span>
                   )}
                 </div>
-                <p className="text-white/90">{notion.description}</p>
               </div>
+            </div>
+            
+            {/* Description section - now more prominent */}
+            <div className="mt-4 bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+              <h3 className="text-lg font-medium mb-2 flex items-center">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-5 w-5 mr-2"
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                About this Notion
+              </h3>
+              <p className="text-white leading-relaxed whitespace-pre-line">
+                {notion.description || "No description provided."}
+              </p>
             </div>
           </div>
           
@@ -699,19 +722,19 @@ export default function NotionDetailsPage() {
                   onClick={() => router.push(`/chat/mentor/${id}`)}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                 >
-                  Chat with Mentor
+                  Chat with Mentors
                 </button>
                 <button
                   onClick={() => router.push(`/chat/teamMember/${id}`)}
                   className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                 >
-                  Chat with Team Member
+                  Chat with Team Members
                 </button>
               </div>
             )}
             {notion.isTeamMember && !notion.isOwner && (
               <button
-                onClick={() => router.push(`/chat/owner/${id}`)}
+                onClick={() => router.push(`/chat/teamMember/${id}`)}
                 className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
                 Chat with Owner
@@ -719,7 +742,7 @@ export default function NotionDetailsPage() {
             )}
             {notion.isMentor && !notion.isOwner && (
               <button
-                onClick={() => router.push(`/chat/owner-mentor/${id}`)}
+                onClick={() => router.push(`/chat/mentor/${id}`)}
                 className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
                 Chat with Owner
