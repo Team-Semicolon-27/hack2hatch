@@ -1,49 +1,70 @@
-"use client"
+'use client';
 
-import React, { useEffect, useState } from "react"
-import axios from "axios"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import type mongoose from "mongoose"
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { MessageCircle, Plus, Search } from "lucide-react";
+import type mongoose from "mongoose";
+
+interface User {
+  _id: mongoose.Schema.Types.ObjectId;
+  name: string;
+  username: string;
+  profileImage: string;
+}
 
 interface Notion {
-  _id: mongoose.Schema.Types.ObjectId
-  owner: {
-    _id: mongoose.Schema.Types.ObjectId
-    name: string
-    username: string
-    profileImage: string
-  }
-  title: string
-  logo: string
+  _id: mongoose.Schema.Types.ObjectId;
+  owner: User;
+  title: string;
+  logo: string;
+  description?: string;
 }
 
 const NotionsPage = () => {
-  const [notions, setNotions] = useState<Notion[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
+  const [notions, setNotions] = useState<Notion[]>([]);
+  const [filteredNotions, setFilteredNotions] = useState<Notion[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchNotions() {
       try {
-        const res = await axios.get("/api/entrepreneur/notions")
+        const res = await axios.get("/api/entrepreneur/notions");
         if (res.status === 200) {
-          setNotions(res.data)
+          setNotions(res.data);
+          setFilteredNotions(res.data);
         } else {
-          setError("Failed to load notions. Please try again later.")
-          // router.push('/')
+          setError("Failed to load notions. Please try again later.");
         }
       } catch (error) {
-        console.error("Error fetching notions:", error)
-        setError("An error occurred while loading your notions.")
-        // router.push('/')
+        console.error("Error fetching notions:", error);
+        setError("An error occurred while loading your notions.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    fetchNotions()
-  }, [router])
+    fetchNotions();
+  }, []);
+
+  useEffect(() => {
+    if (search) {
+      const filtered = notions.filter((notion) => 
+        notion.title.toLowerCase().includes(search.toLowerCase())
+      );
+      setFilteredNotions(filtered);
+    } else {
+      setFilteredNotions(notions);
+    }
+  }, [search, notions]);
+
+  const handleChatClick = (e: React.MouseEvent, notionId: mongoose.Schema.Types.ObjectId) => {
+    e.stopPropagation(); // Prevent the card click from triggering
+    router.push(`/chat/mentor/${notionId.toString()}`);
+  };
 
   if (loading) {
     return (
@@ -57,7 +78,7 @@ const NotionsPage = () => {
           <div className="animate-pulse bg-orange-200 h-6 w-40 rounded mt-6"></div>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -88,13 +109,13 @@ const NotionsPage = () => {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-10">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-10">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">
               <span className="text-orange-500">My</span> Notions
@@ -103,26 +124,34 @@ const NotionsPage = () => {
               Manage and view all the notions you&#39;ve created.
             </p>
           </div>
-          <Link
-            href="/my-notions/add"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors inline-flex items-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          
+          <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-4">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search notions..."
+                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all w-full sm:w-64"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            
+            <Link
+              href="/my-notions/add"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors inline-flex items-center justify-center"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Notion
-          </Link>
+              <Plus className="h-5 w-5 mr-2" />
+              Add Notion
+            </Link>
+          </div>
         </div>
 
-        {notions.length > 0 ? (
+        {filteredNotions.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {notions.map((notion) => (
+            {filteredNotions.map((notion) => (
               <div
                 key={notion._id.toString()}
                 className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
@@ -134,8 +163,8 @@ const NotionsPage = () => {
                     alt={notion.title}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                     onError={(e) => {
-                      const target = e.target as HTMLImageElement
-                      target.src = "/placeholder.svg?height=200&width=400"
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg?height=200&width=400";
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end">
@@ -147,6 +176,9 @@ const NotionsPage = () => {
 
                 <div className="p-5">
                   <h2 className="text-xl font-bold text-gray-800 mb-3 line-clamp-1">{notion.title}</h2>
+                  {notion.description && (
+                    <p className="text-gray-600 mb-3 line-clamp-2">{notion.description}</p>
+                  )}
 
                   <div className="flex items-center">
                     <img
@@ -154,8 +186,8 @@ const NotionsPage = () => {
                       alt={notion.owner.name}
                       className="w-8 h-8 rounded-full object-cover border-2 border-orange-200"
                       onError={(e) => {
-                        const target = e.target as HTMLImageElement
-                        target.src = "/placeholder.svg?height=40&width=40"
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/placeholder.svg?height=40&width=40";
                       }}
                     />
                     <div className="ml-2">
@@ -165,9 +197,17 @@ const NotionsPage = () => {
                   </div>
                 </div>
 
-                <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
+                <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
                   <button className="text-orange-500 hover:text-orange-600 text-sm font-medium transition-colors">
                     View Notion →
+                  </button>
+                  
+                  <button 
+                    onClick={(e) => handleChatClick(e, notion._id)}
+                    className="bg-orange-100 hover:bg-orange-200 text-orange-600 p-2 rounded-full transition-colors flex items-center justify-center"
+                    aria-label="Chat with mentor"
+                  >
+                    <MessageCircle className="h-5 w-5" />
                   </button>
                 </div>
               </div>
@@ -191,28 +231,29 @@ const NotionsPage = () => {
             </svg>
             <h2 className="text-xl font-bold text-gray-800 mb-2">No notions found</h2>
             <p className="text-gray-600 mb-6">
-              You haven&#39;t created any notions yet. Start by creating your first notion.
+              {search ? `No results found for "${search}"` : "You haven't created any notions yet. Start by creating your first notion."}
             </p>
-            <Link
-              href="/my-notions/add"
-              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors inline-flex items-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            {search ? (
+              <button
+                onClick={() => setSearch("")}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors mr-4"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Create First Notion
-            </Link>
+                Clear Search
+              </button>
+            ) : (
+              <Link
+                href="/my-notions/add"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors inline-flex items-center"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Create First Notion
+              </Link>
+            )}
           </div>
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default NotionsPage
+export default NotionsPage;
