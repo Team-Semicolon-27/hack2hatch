@@ -193,7 +193,7 @@ export default function EntrepreneurProfile() {
           <div className="p-6">
             <div className="pb-2">
               <h2 className="text-xl font-bold text-gray-800">Notions Owned</h2>
-              <p className="text-gray-500 text-sm">Projects and ideas you've created</p>
+              <p className="text-gray-500 text-sm">Projects and ideas you&#39;ve created</p>
             </div>
 
             {profile.notionsOwnerOf && profile.notionsOwnerOf.length > 0 ? (

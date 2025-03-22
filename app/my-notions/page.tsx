@@ -100,7 +100,7 @@ const NotionsPage = () => {
               <span className="text-orange-500">My</span> Notions
             </h1>
             <p className="text-gray-600 mt-2">
-              Manage and view all the notions you've created.
+              Manage and view all the notions you&#39;ve created.
             </p>
           </div>
           <Link
@@ -191,7 +191,7 @@ const NotionsPage = () => {
             </svg>
             <h2 className="text-xl font-bold text-gray-800 mb-2">No notions found</h2>
             <p className="text-gray-600 mb-6">
-              You haven't created any notions yet. Start by creating your first notion.
+              You haven&#39;t created any notions yet. Start by creating your first notion.
             </p>
             <Link
               href="/my-notions/add"

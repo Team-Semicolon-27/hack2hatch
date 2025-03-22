@@ -42,7 +42,8 @@ interface Notion {
 export default function NotionDetailsPage() {
   const { data: session } = useSession();
   const router = useRouter()
-  const {id} = useParams()
+  const params = useParams()
+  const id = params.id
   const [notion, setNotion] = useState<Notion | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [actionLoading, setActionLoading] = useState<boolean>(false)

@@ -1,6 +1,6 @@
 import connectDB from "@/lib/db";
 import {getServerSession, User} from "next-auth";
-import {authOptions} from "@/app/api/auth/[...nextauth]/route";
+import {authOptions} from "@/app/api/auth/[...nextauth]/options";
 import {NextResponse} from "next/server";
 import mongoose from "mongoose";
 import { EntrepreneurModel, MentorModel} from "@/model/model";

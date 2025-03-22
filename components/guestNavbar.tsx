@@ -10,13 +10,13 @@ export default function NavbarGuest() {
         {/* Authentication Buttons */}
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/signup/entrepreneur"
+            href="../app/auth/signup/entrepreneur"
             className="bg-[#FCA311] text-white px-4 py-2 rounded-full hover:bg-[#e08c00] transition-colors shadow"
           >
             Sign Up as Entrepreneur
           </Link>
           <Link
-            href="/signin/entrepreneur"
+            href="../app/login"
             className="bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors shadow"
           >
             Sign In as Entrepreneur

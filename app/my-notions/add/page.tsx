@@ -11,8 +11,9 @@ export default function AddNotionPage() {
   const [logo, setLogo] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-
-  const handleUpload = (result: any) => {
+  
+  // eslint-disable-next-line
+  function handleUpload (result: any) {
     if (result.event === "success") {
       setLogo(result.info.secure_url)
     }
@@ -99,7 +100,7 @@ export default function AddNotionPage() {
               <div className="mb-4">
                 <CldUploadButton
                   uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
-                  onUpload={handleUpload}
+                  onSuccess={handleUpload}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg font-medium transition-colors inline-flex items-center"
                 >
                   <svg

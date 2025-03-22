@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { GalleryVerticalEnd } from "lucide-react";
 import { motion } from "framer-motion";
 import EntrepreneurSignup from "@/components/entrepreneur-signup";
 import MentorSignup from "@/components/mentor-signup";

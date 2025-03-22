@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import NavbarGuest from "@/components/guestNavbar";
 import { useSession } from "next-auth/react";
 import { Menu, X, User, Search, Bell } from "lucide-react";
 
@@ -182,7 +181,7 @@ export default function Navbar() {
                   onKeyDown={handleKeyDown}
                   autoFocus
                 />
-                <button onClick={() => setShowSearchBar(false)} className="p-2 text-gray-600 hover:text-[#FCA311]">
+                <button disabled={loading} onClick={() => setShowSearchBar(false)} className="p-2 text-gray-600 hover:text-[#FCA311]">
                   <X size={18} />
                 </button>
               </div>
