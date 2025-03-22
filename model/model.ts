@@ -11,12 +11,15 @@ export interface Entrepreneur extends Document {
   resetPasswordToken?: string;
   interestedTopics:string[];
   resetPasswordExpires?: Date;
+  blogs: mongoose.Schema.Types.ObjectId[];
   notionsOwnerOf: mongoose.Schema.Types.ObjectId[];
   notionsPartOf: mongoose.Schema.Types.ObjectId[];
   followers: mongoose.Schema.Types.ObjectId[];
   followings: mongoose.Schema.Types.ObjectId[];
   mentorFollowers: mongoose.Schema.Types.ObjectId[];
   mentorFollowings: mongoose.Schema.Types.ObjectId[];
+  notifications: mongoose.Schema.Types.ObjectId[];
+  notificationCount: number;
 }
 
 const EntrepreneurSchema: Schema<Entrepreneur> = new Schema(
@@ -31,12 +34,15 @@ const EntrepreneurSchema: Schema<Entrepreneur> = new Schema(
     interestedTopics:[{type:String,required:true}],
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    blogs: [ { type: Schema.Types.ObjectId, ref: 'BlogE' } ],
     notionsOwnerOf: [{ type: Schema.Types.ObjectId, ref: "Notion" }],
     notionsPartOf: [{ type: Schema.Types.ObjectId, ref: "Notion" }],
     followers: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
     followings: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
     mentorFollowers: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
     mentorFollowings: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
+    notificationCount: { type: Number, default: 0 },
+    notifications: [ { type: Schema.Types.ObjectId, ref: "Notification" }],
   },
   { timestamps: true }
 );
@@ -51,12 +57,15 @@ export interface Mentor extends Document {
   verificationCode: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+  blogs: mongoose.Schema.Types.ObjectId[];
   notionsOwnerOf: mongoose.Schema.Types.ObjectId[];
   notionsPartOf: mongoose.Schema.Types.ObjectId[];
   followers: mongoose.Schema.Types.ObjectId[];
   followings: mongoose.Schema.Types.ObjectId[];
   mentorFollowers: mongoose.Schema.Types.ObjectId[];
   mentorFollowings: mongoose.Schema.Types.ObjectId[];
+  notifications: mongoose.Schema.Types.ObjectId[];
+  notificationCount: number;
 }
 
 const MentorSchema: Schema<Mentor> = new Schema(
@@ -70,12 +79,15 @@ const MentorSchema: Schema<Mentor> = new Schema(
     verificationCode: { type: String, required: true },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    blogs: [ { type: Schema.Types.ObjectId, ref: 'BlogM' } ],
     notionsOwnerOf: [{ type: Schema.Types.ObjectId, ref: "Notion" }],
     notionsPartOf: [{ type: Schema.Types.ObjectId, ref: "Notion" }],
     followers: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
     followings: [{ type: Schema.Types.ObjectId, ref: "Entrepreneur" }],
     mentorFollowers: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
     mentorFollowings: [{ type: Schema.Types.ObjectId, ref: "Mentor" }],
+    notificationCount: { type: Number, default: 0 },
+    notifications: [ { type: Schema.Types.ObjectId, ref: "Notification" }],
   },
   { timestamps: true }
 );
@@ -206,6 +218,20 @@ const MentorCommentSchema: Schema<Comment> = new Schema(
 );
 
 
+interface Notification extends Document {
+  message: string;
+  link: string;
+}
+
+const NotificationSchema: Schema<Notification> = new Schema(
+  {
+    message: { type: String, required: true },
+    link: { type: String, required: true },
+  },
+  { timestamps: true }
+)
+
+
 export interface News extends Document {
   platform: string;
   title: string;
@@ -279,3 +305,6 @@ export const CommentModel: Model<Comment> =
 
 export const MentorCommentModel: Model<MentorComment> =
   mongoose.models.MentorComment || mongoose.model<MentorComment>("MentorComment", MentorCommentSchema);
+
+export const NotificationModel: Model<Notification> =
+  mongoose.models.Notification || mongoose.model<Notification>("Notification", NotificationSchema);

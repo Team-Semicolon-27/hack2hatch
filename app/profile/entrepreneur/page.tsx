@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { useParams } from "next/navigation"
+import mongoose from "mongoose";
 
 interface User {
   username: string
@@ -14,6 +15,18 @@ interface Notion {
   title: string
   logo: string
   description: string
+}
+
+interface Blog {
+  _id: mongoose.Types.ObjectId;
+  title: string
+  content: string
+  tags: string[]
+  notion: {
+    _id: mongoose.Types.ObjectId;
+    title: string
+    logo: string
+  }
 }
 
 interface Profile {
@@ -28,6 +41,7 @@ interface Profile {
   followers: User[]
   mentorFollowings: User[]
   mentorFollowers: User[]
+  blogs: Blog[]
 }
 
 const PREDEFINED_TOPICS = [

@@ -1,9 +1,10 @@
 import {NextResponse} from "next/server";
-import { BlogMModel, NotionModel } from "@/model/model";
+import {BlogMModel, MentorModel, NotionModel} from "@/model/model";
 import connectDB from "@/lib/db"
 import { getServerSession, User } from "next-auth";
 import {authOptions} from "@/app/api/auth/[...nextauth]/options"
 import { aiWrapper } from "@/lib/aiwrapper";
+import mongoose from "mongoose";
 
 export async function POST(req: Request) {
     try {
@@ -16,6 +17,8 @@ export async function POST(req: Request) {
       if (!session || !user) {
         return NextResponse.json({ error: 'Unauthorized. User must be logged in.' }, { status: 401 });
       }
+      
+      const userId = new mongoose.Types.ObjectId(user.id);
 
       const aiDesc = await aiWrapper(title, content);
       
@@ -42,6 +45,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Notion not found' }, { status: 404 });
       }
 
+      await MentorModel.updateOne({ _id: userId}, { $addToSet: { blogs: blog._id } });
       await notion.updateOne({ $push: { blogsM: blog._id } });
       
       

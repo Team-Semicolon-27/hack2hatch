@@ -3,7 +3,7 @@ import connectDB from "@/lib/db";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/app/api/auth/[...nextauth]/options";
 import mongoose from "mongoose";
-import {EntrepreneurModel, MentorModel} from "@/model/model";
+import {EntrepreneurModel, MentorModel, NotificationModel} from "@/model/model";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{id: string}> }) {
   try {
@@ -30,10 +30,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{id:
     
     const objectId = new mongoose.Types.ObjectId(id);
     
+    const notification = await NotificationModel.create({
+      message: `${user.username} has started following you`,
+      link: `profile/${userId}`
+    })
+    
     if (user.userType === "entrepreneur") {
       const otherUser = await MentorModel.updateOne(
         { _id: objectId },
-        { $addToSet: { followers: userId } },
+        {
+          $inc: { notificationCount: 1 },
+          $addToSet: { followers: userId, notifications: notification._id }
+        },
       );
       
       if (!otherUser) {
@@ -49,7 +57,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{id:
     } else {
       const otherUser = await MentorModel.updateOne(
         { _id: objectId },
-        { $addToSet: { mentorFollowers: userId } },
+        {
+          $inc: { notificationCount: 1 },
+          $addToSet: { mentorFollowers: userId, notifications: notification._id }
+        },
       );
       
       if (!otherUser) {

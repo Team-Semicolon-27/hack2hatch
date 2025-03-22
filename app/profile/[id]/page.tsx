@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import axios from "axios";
 import {useParams} from "next/navigation";
+import {useSession} from "next-auth/react";
 
 // Types for profile data
 interface Notion {
@@ -46,6 +47,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'notions' | 'connections'>('notions');
+  const session = useSession();
+  const userId = session?.data?.user?.id
   
   useEffect(() => {
     setLoading(true);
@@ -169,16 +172,17 @@ export default function ProfilePage() {
               </div>
             </div>
             <div>
-              <button
-                className={`px-4 py-2 rounded-md font-medium ${
-                  user.isFollowed
-                    ? "bg-gray-100 text-orange-500 hover:bg-gray-200"
-                    : "bg-white text-orange-500 hover:bg-gray-100"
-                }`}
-                onClick={follow}
+              {userId !== id && <button
+                  className={`px-4 py-2 rounded-md font-medium ${
+                    user.isFollowed
+                      ? "bg-gray-100 text-orange-500 hover:bg-gray-200"
+                      : "bg-white text-orange-500 hover:bg-gray-100"
+                  }`}
+                  onClick={follow}
               >
                 {user.isFollowed ? 'Following' : 'Follow'}
               </button>
+              }
             </div>
           </div>
           

@@ -127,6 +127,43 @@ export async function GET() {
         }
       },
       {
+        $lookup: {
+          from: "bloges",
+          foreignField: "_id",
+          localField: "blogs",
+          as: "blogs",
+          pipeline: [
+            {
+              $lookup: {
+                from: "notions",
+                localField: "notionId",
+                foreignField: "_id",
+                as: "notion",
+                pipeline: [
+                  {
+                    $project: {
+                      title: 1,
+                      logo: 1,
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              $unwind: "$notion"
+            },
+            {
+              $project: {
+                notion: 1,
+                title: 1,
+                content: 1,
+                tags: 1
+              }
+            }
+          ]
+        }
+      },
+      {
         $project: {
           username: 1,
           name: 1,
@@ -138,7 +175,8 @@ export async function GET() {
           followings: 1,
           followers: 1,
           mentorFollowings: 1,
-          mentorFollowers: 1
+          mentorFollowers: 1,
+          blogs: 1
         }
       }
     ])

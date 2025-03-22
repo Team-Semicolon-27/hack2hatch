@@ -84,6 +84,43 @@ export async function GET(req: Request, { params }: { params: Promise<{ blogId: 
         }
       },
       {
+        $lookup: {
+          from: "mentorcomments",
+          localField: "mentorComments",
+          foreignField: "_id",
+          as: "mentorComments",
+          pipeline: [
+            {
+              $lookup: {
+                from: "mentors",
+                localField: "author",
+                foreignField: "_id",
+                as: "author",
+                pipeline: [
+                  {
+                    $project: {
+                      name: 1,
+                      username: 1
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              $unwind: "$author"
+            },
+            {
+              $project:{
+                author: 1,
+                content: 1,
+                likes: 1,
+                createdAt: 1,
+              }
+            }
+          ]
+        }
+      },
+      {
         $project: {
           author: 1,
           title: 1,
@@ -91,6 +128,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ blogId: 
           attachments: 1,
           likes: 1,
           comments: 1,
+          mentorComments: 1,
           links: 1,
           tags: 1,
           blogAI: 1,
@@ -164,6 +202,43 @@ export async function GET(req: Request, { params }: { params: Promise<{ blogId: 
           }
         },
         {
+          $lookup: {
+            from: "mentorcomments",
+            localField: "mentorComments",
+            foreignField: "_id",
+            as: "mentorComments",
+            pipeline: [
+              {
+                $lookup: {
+                  from: "mentors",
+                  localField: "author",
+                  foreignField: "_id",
+                  as: "author",
+                  pipeline: [
+                    {
+                      $project: {
+                        name: 1,
+                        username: 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                $unwind: "$author"
+              },
+              {
+                $project:{
+                  author: 1,
+                  content: 1,
+                  likes: 1,
+                  createdAt: 1,
+                }
+              }
+            ]
+          }
+        },
+        {
           $project: {
             author: 1,
             title: 1,
@@ -171,6 +246,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ blogId: 
             attachments: 1,
             likes: 1,
             comments: 1,
+            mentorComments: 1,
             links: 1,
             tags: 1,
             blogAI: 1,

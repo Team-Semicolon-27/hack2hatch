@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import { BlogEModel, NotionModel } from "@/model/model";
+import {BlogEModel, EntrepreneurModel, NotionModel} from "@/model/model";
 import connectDB from "@/lib/db"
 import { getServerSession, User } from "next-auth";
 import {authOptions} from "@/app/api/auth/[...nextauth]/options"
@@ -44,6 +44,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Failed to create blog post' }, { status: 500 });
       }
       
+      await EntrepreneurModel.updateOne({ _id: userId }, { $push: { blogs: blog._id } });
       await notion.updateOne({ $push: { blogsE: blog._id } });
       
       return NextResponse.json(blog, { status: 200 });
