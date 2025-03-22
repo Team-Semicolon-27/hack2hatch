@@ -1,29 +1,25 @@
 'use client';
 
 import React, {useState, useEffect, JSX} from 'react';
-import { useParams } from 'next/navigation';
+import {useParams, useRouter} from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import {useSession} from "next-auth/react";
 import mongoose from "mongoose";
 import axios from "axios";
+import {router} from "next/client";
 
 // Types based on your models
 interface User {
   _id: mongoose.Types.ObjectId;
   name: string;
-  email: string;
-}
-
-interface Like {
-  user: User;
-  userType: 'Entrepreneur' | 'Mentor';
+  username: string;
 }
 
 interface CommentType {
   _id: mongoose.Types.ObjectId;
   author: User;
   content: string;
-  likes: Like[];
+  likes: mongoose.Types.ObjectId[];
   createdAt: string;
 }
 
@@ -33,7 +29,7 @@ interface Blog {
   title: string;
   content: string;
   attachments: string[];
-  likes: Like[];
+  likes: mongoose.Types.ObjectId[];
   comments: CommentType[];
   links: string[];
   tags: string[];
@@ -44,10 +40,10 @@ interface Blog {
 
 const SingleBlogPost = () => {
   const session = useSession();
-  const userId = session?.data?.user?.id;
-  const userType = session?.data?.user?.userType;
+  const [userId, setUserId] = useState(session?.data?.user?.id);
   const params = useParams();
   const blogId = params.blogId as string;
+  const router = useRouter();
   
   const [blogType, setType] = useState("")
   const [blog, setBlog] = useState<Blog | null>(null);
@@ -62,9 +58,11 @@ const SingleBlogPost = () => {
         setLoading(true);
         const response = await axios.get(`/api/blogs/${blogId}`);
         if (response.status === 200) {
+          setUserId(response.data.userId);
+          console.log(response.data.blog);
           setBlog(response.data.blog);
           setType(response.data.type);
-          setIsLikedByCurrentUser(response.data.blog.likes.some((like: Like) => like.user._id.toString() === userId));
+          setIsLikedByCurrentUser(response.data.blog.likes.some((like: mongoose.Types.ObjectId) => like.toString() === response.data.userId.toString()));
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -82,36 +80,42 @@ const SingleBlogPost = () => {
     return <div className="flex justify-center items-center min-h-screen bg-gray-100">Blog post not found</div>;
   }
   
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen bg-gray-100">Loading...</div>;
+  }
+  
   const handleLike = async () => {
     try {
       if (blogType === "entrepreneur") {
         if (!isLikedByCurrentUser) {
           const res = await axios.patch(`/api/blogs/entrepreneur/like/${blogId}`)
           if (res.status === 200) {
-            if (userType === "entrepreneur") {
-              // @ts-expect-error abc
-              setBlog((prev) => (prev ? {...prev, likes: [...prev.likes, {user: userId, userType: "Entrepreneur" }] } : null));
-            } else {
-              // @ts-expect-error abc
-              setBlog((prev) => (prev ? {...prev, likes: [...prev.likes, {user: userId, userType: "Mentor" }] } : null));
-            }
+            // @ts-expect-error abc
+            setBlog((prev) => (prev ? {...prev, likes: [...prev.likes, userId] } : null));
             setIsLikedByCurrentUser(true);
           }
         } else {
           const res = await axios.delete(`/api/blogs/entrepreneur/like/${blogId}`)
           if (res.status === 200) {
-            if (userType === "entrepreneur") {
-              // @ts-expect-error abc
-              setBlog((prev) => (prev ? {...prev, likes: prev.likes.filter((like) => like.user !== userId && userType !== "Entrepreneur") } : null));
-            } else {
-              // @ts-expect-error abc
-              setBlog((prev) => (prev ? {...prev, likes: prev.likes.filter((like) => like.user !== userId && userType !== "Mentor") } : null));
-            }
+            setBlog((prev) => (prev ? {...prev, likes: prev.likes.filter((like) => like.toString() !== userId) } : null));
             setIsLikedByCurrentUser(false);
           }
         }
       } else {
-      
+        if (!isLikedByCurrentUser) {
+          const res = await axios.patch(`/api/blogs/mentors/like/${blogId}`)
+          if (res.status === 200) {
+            // @ts-expect-error abc
+            setBlog((prev) => (prev ? {...prev, likes: [...prev.likes, userId] } : null));
+            setIsLikedByCurrentUser(true);
+          }
+        } else {
+          const res = await axios.delete(`/api/blogs/mentors/like/${blogId}`)
+          if (res.status === 200) {
+            setBlog((prev) => (prev ? {...prev, likes: prev.likes.filter((like) => like.toString() !== userId) } : null));
+            setIsLikedByCurrentUser(false);
+          }
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to like post');
@@ -122,19 +126,58 @@ const SingleBlogPost = () => {
     e.preventDefault();
     
     try {
-      // const updatedBlog = await response.json();
-      // setBlog(updatedBlog);
-      setCommentContent('');
+      if (blogType === "entrepreneur") {
+        const res = await axios.post(`/api/blogs/entrepreneur/comment/${blogId}`, {content: commentContent})
+        if (res.status === 200) {
+          setBlog((prev) => (prev ? { ...prev, comments: [...prev.comments, res.data]} : null))
+          setCommentContent('');
+        } else {
+          alert("failed to add comment")
+        }
+      } else {
+        const res = await axios.post(`/api/blogs/mentors/comment/${blogId}`, {content: commentContent})
+        if (res.status === 200) {
+          setBlog((prev) => (prev ? { ...prev, comments: [...prev.comments, res.data]} : null))
+          setCommentContent('');
+        } else {
+          alert("failed to add comment")
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add comment');
     }
   };
   
-  const handleLikeComment = async (commentId: string) => {
-    
+  const handleLikeComment = async (commentId: string,  liked: boolean) => {
+    if (!userId) return
     try {
-      
-      
+      if (!liked) {
+        const res = await axios.patch(`/api/blogs/entrepreneur/comment/${commentId}`)
+        if (res.status === 200) {
+          setBlog((prev) => (prev ? {...prev, comments: prev.comments.filter(comment => {
+            if (comment._id.toString() === commentId) {
+              return {...comment, likes: [...comment.likes, userId]};
+            }
+            return comment
+          })}: null))
+          router.refresh();
+        } else {
+          alert("failed to like comment");
+        }
+      } else {
+        const res = await axios.delete(`/api/blogs/entrepreneur/comment/${commentId}`)
+        if (res.status === 200) {
+          setBlog((prev) => (prev ? {...prev, comments: prev.comments.filter(comment => {
+              if (comment._id.toString() === commentId) {
+                return {...comment, likes: comment.likes.filter(like => like.toString() !== userId.toString())};
+              }
+              return comment
+            })}: null))
+          router.refresh();
+        } else {
+          alert("failed to like comment");
+        }
+      }
       // const updatedBlog = await response.json();
       // setBlog(updatedBlog);
     } catch (err) {
@@ -142,9 +185,6 @@ const SingleBlogPost = () => {
     }
   };
   
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen bg-gray-100">Loading...</div>;
-  }
   
   if (error) {
     return <div className="flex justify-center items-center min-h-screen bg-gray-100 text-orange-600">{error}</div>;
@@ -344,24 +384,16 @@ const SingleBlogPost = () => {
             {/* Stats bar */}
             <div className="flex items-center justify-between py-3 text-sm text-gray-500 border-b border-gray-200">
               <div className="hover:underline cursor-pointer">
-                <span className="font-bold text-gray-900">{blog.comments.length}</span> Comments
-              </div>
-              <div className="hover:underline cursor-pointer">
                 <span className="font-bold text-gray-900">{blog.likes.length}</span> Likes
               </div>
+              
               <div className="hover:underline cursor-pointer">
-                <span className="font-bold text-gray-900">{blog.links.length + blog.attachments.length}</span> Shares
+                <span className="font-bold text-gray-900">{blog.comments.length}</span> Comments
               </div>
             </div>
             
             {/* Action buttons */}
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <button className="p-2 rounded-full hover:bg-blue-50 hover:text-blue-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
-                </svg>
-              </button>
-              
               <button
                 onClick={handleLike}
                 className={`p-2 rounded-full transition-colors ${
@@ -382,15 +414,9 @@ const SingleBlogPost = () => {
                 </svg>
               </button>
               
-              <button className="p-2 rounded-full hover:bg-green-50 hover:text-green-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
-                </svg>
-              </button>
-              
               <button className="p-2 rounded-full hover:bg-blue-50 hover:text-blue-500 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
                 </svg>
               </button>
             </div>
@@ -480,16 +506,16 @@ const SingleBlogPost = () => {
                           </button>
                           
                           <button
-                            onClick={() => handleLikeComment(comment._id.toString())}
+                            onClick={() => handleLikeComment(comment._id.toString(), comment.likes.some(like => userId && like.toString() === userId.toString()))}
                             className={`p-2 rounded-full flex items-center ${
-                              comment.likes.some(like => userId && like.user._id.toString() === userId)
+                              comment.likes.some(like => userId && like.toString() === userId.toString())
                                 ? 'text-orange-600'
                                 : 'text-gray-500 hover:text-orange-600 hover:bg-orange-50'
                             }`}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              fill={comment.likes.some(like => userId && like.user._id.toString() === userId)
+                              fill={comment.likes.some(like => userId && like.toString() === userId.toString())
                                 ? "currentColor"
                                 : "none"
                               }

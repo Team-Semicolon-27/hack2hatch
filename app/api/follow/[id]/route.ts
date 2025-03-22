@@ -3,7 +3,7 @@ import connectDB from "@/lib/db";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
-import {BlogEModel, BlogMModel} from "@/model/model";
+import {EntrepreneurModel, MentorModel} from "@/model/model";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{id: string}> }) {
   try {
@@ -30,20 +30,40 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{id:
     
     const objectId = new mongoose.Types.ObjectId(id);
     
-    const blog = await BlogMModel.updateOne(
-      { _id: objectId },
-      { $addToSet: { likes: userId } } ,
-    );
-    
-    if (!blog) {
-      return NextResponse.json({ error: "blog not found" }, { status: 404 });
+    if (user.userType === "entrepreneur") {
+      const otherUser = await EntrepreneurModel.updateOne(
+        { _id: objectId },
+        { $addToSet: { followers: userId } },
+      );
+      
+      if (!otherUser) {
+        return NextResponse.json({ error: "no user found" }, { status: 404});
+      }
+      
+      await EntrepreneurModel.updateOne(
+        { _id: userId },
+        { $addToSet: { followings: objectId } },
+      );
+      
+      return NextResponse.json({ status: 200 });
+    } else {
+      const otherUser = await EntrepreneurModel.updateOne(
+        { _id: objectId },
+        { $addToSet: { mentorFollowers: userId } },
+      );
+      
+      if (!otherUser) {
+        return NextResponse.json({ error: "no user found" }, { status: 404});
+      }
+      
+      await MentorModel.updateOne(
+        { _id: userId },
+        { $addToSet: { followings: objectId } },
+      );
+      
+      return NextResponse.json({ status: 200 });
     }
     
-    if (!blog.modifiedCount) {
-      return NextResponse.json({ error: "already not liked" }, { status: 403 });
-    }
-    
-    return NextResponse.json({ status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: error },
@@ -78,20 +98,40 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{id
     
     const objectId = new mongoose.Types.ObjectId(id);
     
-    const blog = await BlogMModel.updateOne(
-      { _id: objectId },
-      { $pull: { likes: userId } } ,
-    );
-    
-    if (!blog) {
-      return NextResponse.json({ error: "blog not found" }, { status: 404 });
+    if (user.userType === "entrepreneur") {
+      const otherUser = await EntrepreneurModel.updateOne(
+        { _id: objectId },
+        { $pull: { followers: userId } },
+      );
+      
+      if (!otherUser) {
+        return NextResponse.json({ error: "no user found" }, { status: 404});
+      }
+      
+      await EntrepreneurModel.updateOne(
+        { _id: userId },
+        { $pull: { followings: objectId } },
+      );
+      
+      return NextResponse.json({ status: 200 });
+    } else {
+      const otherUser = await EntrepreneurModel.updateOne(
+        { _id: objectId },
+        { $pull: { mentorFollowers: userId } },
+      );
+      
+      if (!otherUser) {
+        return NextResponse.json({ error: "no user found" }, { status: 404});
+      }
+      
+      await MentorModel.updateOne(
+        { _id: userId },
+        { $pull: { followings: objectId } },
+      );
+      
+      return NextResponse.json({ status: 200 });
     }
     
-    if (!blog.modifiedCount) {
-      return NextResponse.json({ error: "already not liked" }, { status: 403 });
-    }
-    
-    return NextResponse.json({ status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: error },
@@ -99,3 +139,4 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{id
     )
   }
 }
+
