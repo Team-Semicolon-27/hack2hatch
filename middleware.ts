@@ -14,7 +14,6 @@ export const config = {
     '/resources/:path*',
     '/user/:path*',
     '/issues/:path*',
-    '/welcome' // Add /welcome to matcher
   ],
 };
 
@@ -39,7 +38,7 @@ export async function middleware(request: NextRequest) {
   // Redirect unauthenticated users to /sign-in
   if (!token && !isAuthPage) {
     console.log("Redirecting unauthenticated user -> /sign-in");
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+    return NextResponse.redirect(new URL('/welcome', request.url));
   }
 
   // Redirect unverified users to /verify
