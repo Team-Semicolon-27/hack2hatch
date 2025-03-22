@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import NavbarGuest from "@/components/guestNavbar";
 import { useSession } from "next-auth/react";
 import { Menu, X, User, Search, Bell } from "lucide-react";
 

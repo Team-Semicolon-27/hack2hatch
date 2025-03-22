@@ -4,7 +4,6 @@ import { useState, useRef } from "react"
 import { CldUploadButton } from "next-cloudinary"
 import axios from "axios"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 
 export default function AddNotionPage() {
   // Form state

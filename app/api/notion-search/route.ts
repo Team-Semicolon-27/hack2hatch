@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import { NotionModel } from "@/model/model";
-import mongoose from "mongoose";
 
-export async function getAllNotions(limit = 100) {
+async function getAllNotions(limit = 100) {
   try {
     return await NotionModel.find().limit(limit).lean();
   } catch (error) {
@@ -18,7 +17,7 @@ interface FuzzySearchResult {
   aiDescription: string;
 }
 
-export async function advancedFuzzySearch(query: string, limit: number = 10): Promise<FuzzySearchResult[]> {
+async function advancedFuzzySearch(query: string, limit: number = 10): Promise<FuzzySearchResult[]> {
   const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
   const regexPattern = new RegExp(escapedQuery, "i");
 
@@ -47,7 +46,7 @@ interface PostResponse {
   count: number;
 }
 
-export async function POST(req: NextRequest): Promise<NextResponse<PostResponse>> {
+export async function POST(req: NextRequest) {
   try {
     await connectDB();
     const body: PostRequestBody = await req.json();
