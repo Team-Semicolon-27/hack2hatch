@@ -1,7 +1,5 @@
-import mongoose, { mongo } from "mongoose";
 import {NextResponse} from "next/server";
-import { BlogM, BlogMModel, NotionModel } from "../../../../model/model";
-import { EntrepreneurModel } from "../../../../model/model";
+import { BlogMModel, NotionModel } from "../../../../model/model";
 import connectDB from "@/lib/db"
 import { getServerSession, User } from "next-auth";
 import {authOptions} from "@/app/api/auth/[...nextauth]/route"
@@ -44,19 +42,14 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Notion not found' }, { status: 404 });
       }
 
-      await notion.updateOne({ $push: { blogIds: blog.id } });
+      await notion.updateOne({ $push: { blogsM: blog._id } });
       
       
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Blog created successfully', 
-        data: blog 
-      }, { status: 200 });
+      return NextResponse.json(blog, { status: 200 });
     } catch (error) {
       console.error('Error creating blog:', error);
       return NextResponse.json({ 
         error: 'Failed to create blog post', 
-        details: (error as any).message 
       }, { status: 500 });
     }
   }

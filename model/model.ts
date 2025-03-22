@@ -129,13 +129,7 @@ const BlogESchema: Schema<BlogE> = new Schema(
     title: { type: String, required: true },
     content: { type: String, required: true },
     attachments: [{ type: String }],
-    likes: [
-      {
-        user: { type: Schema.Types.ObjectId, required: true, refPath: "likes.userType" },
-        userType: { type: String, enum: ["Entrepreneur", "Mentor"], required: true },
-      },
-    ],
-    
+    likes: [ { type: Schema.Types.ObjectId, }, ],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     links: [{ type: String }],
     tags: [{ type: String }],
@@ -164,13 +158,7 @@ const BlogMSchema: Schema<BlogM> = new Schema(
     title: { type: String, required: true },
     content: { type: String, required: true },
     attachments: [{ type: String }],
-    likes: [
-      {
-        user: { type: Schema.Types.ObjectId, required: true, refPath: "likes.userType" },
-        userType: { type: String, enum: ["Entrepreneur", "Mentor"], required: true },
-      },
-    ],
-    
+    likes: [ { type: Schema.Types.ObjectId } ],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     links: [{ type: String }],
     tags: [{ type: String }],
@@ -190,13 +178,7 @@ const CommentSchema: Schema<Comment> = new Schema(
   {
     author: { type: Schema.Types.ObjectId, ref: "Entrepreneur", required: true },
     content: { type: String, required: true },
-    likes: [
-      {
-        user: { type: Schema.Types.ObjectId, required: true, refPath: "likes.userType" },
-        userType: { type: String, enum: ["Entrepreneur", "Mentor"], required: true },
-      },
-    ],
-    
+    likes: [],
   },
   { timestamps: true }
 );

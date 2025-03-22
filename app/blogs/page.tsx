@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
+import {useRouter} from "next/navigation";
+import Link from "next/link";
+import mongoose from "mongoose";
 
 interface Blog {
   _id: string
   title: string
   content: string
   author: {
+    _id: mongoose.Types.ObjectId
     name: string
     username: string
     profileImage: string
@@ -114,6 +118,8 @@ export default function BlogsPage() {
 
 // Blog Card Component
 function BlogCard({ blog }: { blog: Blog }) {
+  const router = useRouter()
+  
   // Function to truncate text with ellipsis
   const truncateText = (text: string, maxLength: number) => {
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text
@@ -145,13 +151,13 @@ function BlogCard({ blog }: { blog: Blog }) {
               />
             </div>
           </div>
-          <div className="ml-3">
+          <Link href={`../profile/${blog.author._id.toString()}`} className="ml-3">
             <p className="font-bold text-gray-800">{blog.author.name}</p>
             <p className="text-gray-500 text-sm">@{blog.author.username}</p>
-          </div>
+          </Link>
         </div>
         
-        <h3 className="text-lg font-semibold text-gray-800 mb-2 h-14 overflow-hidden">
+        <h3 onClick={() => router.push(`/blogs/${blog._id.toString()}`)} className="text-lg font-semibold text-gray-800 mb-2 h-14 overflow-hidden">
           {truncateText(blog.title, 60)}
         </h3>
         <p className="text-gray-600 mb-3 h-20 overflow-hidden">{truncateText(blog.content, 120)}</p>
