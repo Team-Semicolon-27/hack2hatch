@@ -78,21 +78,23 @@ export default function MentorSignup() {
           </div>
         ))}
 
-        {/* Cloudinary Upload Widget */}
-        <CldUploadWidget
-          uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
-          onSuccess={(result) => handleUploadSuccess(result as UploadResult)}
-        >
-          {({ open }: { open: () => void }) => (
-            <div
-              onClick={() => open()}
-              className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center cursor-pointer hover:bg-gray-50 transition-all"
-            >
-              <Paperclip className="mx-auto h-12 w-12 text-orange-400" />
-              <p className="mt-1 text-sm text-gray-500">Click to upload image</p>
-            </div>
-          )}
-        </CldUploadWidget>
+        {/* Cloudinary Upload Widget - Only show if no image is uploaded */}
+        {!profileImage && (
+          <CldUploadWidget
+            uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+            onSuccess={(result) => handleUploadSuccess(result as UploadResult)}
+          >
+            {({ open }: { open: () => void }) => (
+              <div
+                onClick={() => open()}
+                className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center cursor-pointer hover:bg-gray-50 transition-all"
+              >
+                <Paperclip className="mx-auto h-12 w-12 text-orange-400" />
+                <p className="mt-1 text-sm text-gray-500">Click to upload image</p>
+              </div>
+            )}
+          </CldUploadWidget>
+        )}
 
         {/* Display Uploaded Image */}
         {profileImage && (
