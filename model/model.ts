@@ -119,6 +119,7 @@ export interface BlogE extends Document {
   attachments: string[];
   likes: mongoose.Schema.Types.ObjectId[];
   comments: mongoose.Schema.Types.ObjectId[];
+  mentorComments: mongoose.Schema.Types.ObjectId[];
   links: string[];
   tags: string[];
   blogAI: string;
@@ -133,6 +134,7 @@ const BlogESchema: Schema<BlogE> = new Schema(
     attachments: [{ type: String }],
     likes: [ { type: Schema.Types.ObjectId, }, ],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
+    mentorComments: [{ type: Schema.Types.ObjectId, ref: "MentorComment" }],
     links: [{ type: String }],
     tags: [{ type: String }],
     blogAI: { type: String },
@@ -148,6 +150,7 @@ export interface BlogM extends Document {
   attachments: string[];
   likes: mongoose.Schema.Types.ObjectId[];
   comments: mongoose.Schema.Types.ObjectId[];
+  mentorComments: mongoose.Types.ObjectId[];
   links: string[];
   tags: string[];
   blogAI: string;
@@ -162,6 +165,7 @@ const BlogMSchema: Schema<BlogM> = new Schema(
     attachments: [{ type: String }],
     likes: [ { type: Schema.Types.ObjectId } ],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
+    mentorComments: [{ type: Schema.Types.ObjectId, ref: "MentorComment" }],
     links: [{ type: String }],
     tags: [{ type: String }],
     blogAI: { type: String },
@@ -184,6 +188,23 @@ const CommentSchema: Schema<Comment> = new Schema(
   },
   { timestamps: true }
 );
+
+
+export interface MentorComment extends Document {
+  author: mongoose.Schema.Types.ObjectId;
+  content: string;
+  likes: mongoose.Schema.Types.ObjectId[];
+}
+
+const MentorCommentSchema: Schema<Comment> = new Schema(
+  {
+    author: { type: Schema.Types.ObjectId, ref: "Mentor", required: true },
+    content: { type: String, required: true },
+    likes: [],
+  },
+  { timestamps: true }
+);
+
 
 export interface News extends Document {
   platform: string;
@@ -255,3 +276,6 @@ export const BlogMModel: Model<BlogM> =
 
 export const CommentModel: Model<Comment> =
   mongoose.models.Comment || mongoose.model<Comment>("Comment", CommentSchema);
+
+export const MentorCommentModel: Model<MentorComment> =
+  mongoose.models.MentorComment || mongoose.model<MentorComment>("MentorComment", MentorCommentSchema);

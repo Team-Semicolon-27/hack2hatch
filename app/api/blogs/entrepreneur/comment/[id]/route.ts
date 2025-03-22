@@ -4,7 +4,7 @@ import connectDB from "@/lib/db";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/app/api/auth/[...nextauth]/options";
 import mongoose from "mongoose";
-import {BlogEModel, CommentModel} from "@/model/model";
+import {BlogEModel, CommentModel, MentorCommentModel} from "@/model/model";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{id: string}> }) {
   try {
@@ -38,26 +38,49 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{id: 
     
     const objectId = new mongoose.Types.ObjectId(id);
     
-    const comment = await CommentModel.create({
-      author: userId,
-      content
-    })
-    
-    if (!comment) {
-      return NextResponse.json({ error: "comment not created" }, { status: 500 });
+    if (user.userType === "entrepreneur") {
+      const comment = await CommentModel.create({
+        author: userId,
+        content
+      })
+      
+      if (!comment) {
+        return NextResponse.json({ error: "comment not created" }, { status: 500 });
+      }
+      
+      const blog = await BlogEModel.findByIdAndUpdate(objectId, {
+        $addToSet: { comments: comment._id }
+      })
+      
+      if (!blog) {
+        return NextResponse.json({ error: "comment not added to blog" }, { status: 500});
+      }
+      
+      const newComment = await CommentModel.findById(comment._id).populate("author", "name username").exec();
+      
+      return NextResponse.json({newComment, type: "entrepreneur"} , { status: 200 })
+    } else {
+      const mentorComment = await MentorCommentModel.create({
+        author: userId,
+        content
+      })
+      
+      if (!mentorComment) {
+        return NextResponse.json({ error: "comment not created" }, { status: 500 });
+      }
+      
+      const blog = await BlogEModel.findByIdAndUpdate(objectId, {
+        $addToSet: { mentorComments: mentorComment._id }
+      })
+      
+      if (!blog) {
+        return NextResponse.json({ error: "comment not added to blog" }, { status: 500});
+      }
+      
+      const newComment = await CommentModel.findById(mentorComment._id).populate("author", "name username").exec();
+      
+      return NextResponse.json({newComment, type: "mentor"}, { status: 200 })
     }
-    
-    const blog = await BlogEModel.findByIdAndUpdate(objectId, {
-      $addToSet: { comments: comment._id }
-    })
-    
-    if (!blog) {
-      return NextResponse.json({ error: "comment not added to blog" }, { status: 500});
-    }
-    
-    const newComment = await CommentModel.findById(comment._id).populate("author", "name username").exec();
-    
-    return NextResponse.json(newComment, { status: 200 })
   } catch (error) {
     return NextResponse.json(
       { error: error },
