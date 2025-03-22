@@ -13,7 +13,8 @@ export const config = {
     '/events/:path*', 
     '/resources/:path*',
     '/user/:path*',
-    '/issues/:path*'
+    '/issues/:path*',
+    '/welcome' // Add /welcome to matcher
   ],
 };
 
@@ -27,20 +28,21 @@ export async function middleware(request: NextRequest) {
   const isAuthPage =
     url.pathname.startsWith("/auth/signup/") ||
     url.pathname.startsWith("/login/") ||
-    url.pathname === "/welcome" ||
-    url.pathname === "/verify";
+    url.pathname === "/verify"; // Removed "/welcome" from auth pages
 
-  if (token && isAuthPage) {
+  // Redirect authenticated users away from auth pages (including /welcome)
+  if (token && (isAuthPage || url.pathname === "/welcome")) {
     console.log("Redirecting authenticated user from auth page -> /");
     return NextResponse.redirect(new URL('/', request.url));
   }
 
+  // Redirect unauthenticated users to /sign-in
   if (!token && !isAuthPage) {
     console.log("Redirecting unauthenticated user -> /sign-in");
-    return NextResponse.redirect(new URL('/welcome', request.url));
+    return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
-
+  // Redirect unverified users to /verify
   if (token && token.isVerified === false && url.pathname !== "/verify") {
     console.log("Redirecting unverified user -> /verify");
     return NextResponse.redirect(new URL('/verify', request.url));
