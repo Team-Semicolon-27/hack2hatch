@@ -14,6 +14,7 @@ export default function Navbar() {
   const [notificationCount, setNotificationCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   
+  
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -49,7 +50,7 @@ export default function Navbar() {
     fetchNotificationCount();
     
     // Set up interval for polling (e.g., every 30 seconds)
-    const intervalId = setInterval(fetchNotificationCount, 30000);
+    const intervalId = setInterval(fetchNotificationCount, 2000);
     
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
@@ -112,13 +113,22 @@ export default function Navbar() {
               </Link>
               
               {/* Profile */}
-              <Link
-                href="/profile/entrepreneur"
-                className="flex items-center gap-2 bg-[#FCA311] text-white px-4 py-2 rounded-full hover:bg-[#e08c00] transition-colors shadow-sm"
-              >
-                <User size={18} />
-                <span className="font-medium">Profile</span>
-              </Link>
+              { session.user.userType === "entrepreneur" ?
+                <Link
+                  href="/profile/entrepreneur"
+                  className="flex items-center gap-2 bg-[#FCA311] text-white px-4 py-2 rounded-full hover:bg-[#e08c00] transition-colors shadow-sm"
+                >
+                  <User size={18} />
+                  <span className="font-medium">Profile</span>
+                </Link> :
+                <Link
+                  href="/profile/mentor"
+                  className="flex items-center gap-2 bg-[#FCA311] text-white px-4 py-2 rounded-full hover:bg-[#e08c00] transition-colors shadow-sm"
+                >
+                  <User size={18} />
+                  <span className="font-medium">Profile</span>
+                </Link>
+              }
             </div>
             
             {/* Mobile menu button */}

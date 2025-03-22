@@ -31,13 +31,12 @@ interface Blog {
   }
 }
 
-interface Profile {
+interface MentorProfile {
   username: string
   name: string
   email: string
   profileImage: string
   interestedTopics: string[]
-  notionsOwnerOf: Notion[]
   notionsPartOf: Notion[]
   followings: User[]
   followers: User[]
@@ -58,18 +57,18 @@ const PREDEFINED_TOPICS = [
   "SaaS & Cloud Computing",
 ]
 
-export default function EntrepreneurProfile() {
+export default function MentorProfile() {
   const { userId } = useParams()
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const [profile, setProfile] = useState<MentorProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [interestedTopics, setInterestedTopics] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
-  const [activeTab, setActiveTab] = useState<'notions'|'blogs'|'network'>('notions')
+  const [activeTab, setActiveTab] = useState<'contributions'|'blogs'|'network'>('contributions')
   
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`/api/entrepreneur/profile`)
+        const res = await axios.get(`/api/mentor/profile`)
         if (res.status === 200) {
           setProfile(res.data)
           setInterestedTopics(res.data.interestedTopics || [])
@@ -93,7 +92,7 @@ export default function EntrepreneurProfile() {
   const handleUpdateTopics = async () => {
     try {
       setSaving(true)
-      const res = await axios.put(`/api/interested-topics`, {
+      const res = await axios.put(`/api/mentor/interested-topics`, {
         interestedTopics,
       })
       
@@ -139,6 +138,9 @@ export default function EntrepreneurProfile() {
                     className="w-full h-full object-cover"
                   />
                 </div>
+                <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white px-2 py-1 rounded-md text-xs font-bold">
+                  MENTOR
+                </div>
               </div>
               
               <div className="flex-1 text-center md:text-left">
@@ -152,9 +154,6 @@ export default function EntrepreneurProfile() {
                   </span>
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-600">
                     {profile.followings?.length || 0} Following
-                  </span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-600">
-                    {profile.notionsOwnerOf?.length || 0} Notions
                   </span>
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-600">
                     {profile.blogs?.length || 0} Blogs
@@ -172,8 +171,8 @@ export default function EntrepreneurProfile() {
         <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
           <div className="p-6">
             <div className="pb-2">
-              <h2 className="text-xl font-bold text-gray-800">Interested Topics</h2>
-              <p className="text-gray-500 text-sm">Select topics that interest you</p>
+              <h2 className="text-xl font-bold text-gray-800">Areas of Expertise</h2>
+              <p className="text-gray-500 text-sm">Select topics you can mentor others in</p>
             </div>
             
             <div className="flex flex-wrap gap-2 mt-4">
@@ -205,25 +204,25 @@ export default function EntrepreneurProfile() {
                   Saving...
                 </span>
               ) : (
-                "Update Topics"
+                "Update Expertise"
               )}
             </button>
           </div>
         </div>
         
-        {/* Tabs for Notions, Blogs, Network */}
+        {/* Tabs for Contributions, Blogs, Network */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
           <div className="border-b border-gray-200">
             <nav className="flex">
               <button
-                onClick={() => setActiveTab('notions')}
+                onClick={() => setActiveTab('contributions')}
                 className={`px-4 py-3 text-sm font-medium transition-colors flex-1 ${
-                  activeTab === 'notions'
+                  activeTab === 'contributions'
                     ? 'border-b-2 border-orange-500 text-orange-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Notions & Projects
+                Project Contributions
               </button>
               <button
                 onClick={() => setActiveTab('blogs')}
@@ -233,7 +232,7 @@ export default function EntrepreneurProfile() {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Blogs
+                Blogs & Articles
               </button>
               <button
                 onClick={() => setActiveTab('network')}
@@ -248,17 +247,17 @@ export default function EntrepreneurProfile() {
             </nav>
           </div>
           
-          {/* Notions Owned */}
-          {activeTab === 'notions' && (
+          {/* Project Contributions */}
+          {activeTab === 'contributions' && (
             <div className="p-6">
               <div className="pb-2">
-                <h2 className="text-xl font-bold text-gray-800">Notions Owned</h2>
-                <p className="text-gray-500 text-sm">Projects and ideas you've created</p>
+                <h2 className="text-xl font-bold text-gray-800">Project Contributions</h2>
+                <p className="text-gray-500 text-sm">Notions you're mentoring or contributing to</p>
               </div>
               
-              {profile.notionsOwnerOf && profile.notionsOwnerOf.length > 0 ? (
+              {profile.notionsPartOf && profile.notionsPartOf.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                  {profile.notionsOwnerOf.map((notion) => (
+                  {profile.notionsPartOf.map((notion) => (
                     <div
                       key={notion._id.toString()}
                       className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-orange-200 transition-all"
@@ -281,63 +280,31 @@ export default function EntrepreneurProfile() {
                       </div>
                       <div className="h-px bg-gray-200 my-3"></div>
                       <p className="text-gray-600 text-sm line-clamp-2">{notion.description}</p>
+                      <div className="mt-3">
+                        <Link href={`/notions/${notion._id}`} className="text-sm text-orange-500 hover:text-orange-600 font-medium">
+                          View Project
+                        </Link>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-8 mt-4">
-                  <p className="text-gray-500">No notions created yet</p>
+                  <p className="text-gray-500">Not contributing to any projects yet</p>
                   <button className="mt-4 px-4 py-2 rounded-md font-medium text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors">
-                    Create Your First Notion
+                    Find Projects to Mentor
                   </button>
-                </div>
-              )}
-              
-              {profile.notionsPartOf && profile.notionsPartOf.length > 0 && (
-                <div className="mt-8">
-                  <div className="pb-2">
-                    <h2 className="text-xl font-bold text-gray-800">Contributing To</h2>
-                    <p className="text-gray-500 text-sm">Projects you're participating in</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                    {profile.notionsPartOf.map((notion) => (
-                      <div
-                        key={notion._id.toString()}
-                        className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-orange-200 transition-all"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center overflow-hidden">
-                            <img
-                              src={notion.logo || "/placeholder.svg?height=48&width=48"}
-                              alt={notion.title}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement
-                                target.src = "/placeholder.svg?height=48&width=48"
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-800">{notion.title}</h3>
-                          </div>
-                        </div>
-                        <div className="h-px bg-gray-200 my-3"></div>
-                        <p className="text-gray-600 text-sm line-clamp-2">{notion.description}</p>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
             </div>
           )}
           
-          {/* Blogs */}
+          {/* Blogs & Articles */}
           {activeTab === 'blogs' && (
             <div className="p-6">
               <div className="pb-2">
-                <h2 className="text-xl font-bold text-gray-800">Your Blog Posts</h2>
-                <p className="text-gray-500 text-sm">Articles you've written</p>
+                <h2 className="text-xl font-bold text-gray-800">Blogs & Articles</h2>
+                <p className="text-gray-500 text-sm">Knowledge sharing and insights</p>
               </div>
               
               {profile.blogs && profile.blogs.length > 0 ? (
@@ -347,10 +314,25 @@ export default function EntrepreneurProfile() {
                       key={blog._id.toString()}
                       className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-orange-200 transition-all"
                     >
-                      <h3 className="font-semibold text-gray-800 text-lg">{blog.title}</h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Related to: <span className="text-orange-500">{blog.notion.title}</span>
-                      </p>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-semibold text-gray-800 text-lg">{blog.title}</h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Related to: <span className="text-orange-500">{blog.notion.title}</span>
+                          </p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-orange-100 flex-shrink-0">
+                          <img
+                            src={blog.notion.logo || "/placeholder.svg?height=40&width=40"}
+                            alt={blog.notion.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.src = "/placeholder.svg?height=40&width=40"
+                            }}
+                          />
+                        </div>
+                      </div>
                       <div className="h-px bg-gray-200 my-3"></div>
                       <p className="text-gray-600 line-clamp-3">{blog.content.substring(0, 150)}...</p>
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -360,17 +342,19 @@ export default function EntrepreneurProfile() {
                           </span>
                         ))}
                       </div>
-                      <Link href={`/blogs/${blog._id}`} className="inline-block mt-3 text-orange-500 hover:text-orange-600 text-sm font-medium">
-                        Read More
-                      </Link>
+                      <div className="mt-3 flex justify-between items-center">
+                        <Link href={`/blogs/${blog._id}`} className="text-sm text-orange-500 hover:text-orange-600 font-medium">
+                          Read Full Article
+                        </Link>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-8 mt-4">
-                  <p className="text-gray-500">No blog posts yet</p>
+                  <p className="text-gray-500">No blog posts or articles yet</p>
                   <button className="mt-4 px-4 py-2 rounded-md font-medium text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors">
-                    Write Your First Blog
+                    Write Your First Article
                   </button>
                 </div>
               )}
@@ -385,7 +369,7 @@ export default function EntrepreneurProfile() {
                 <div>
                   <div className="pb-2">
                     <h2 className="text-xl font-bold text-gray-800">Followers</h2>
-                    <p className="text-gray-500 text-sm">People following your work</p>
+                    <p className="text-gray-500 text-sm">Entrepreneurs following you</p>
                   </div>
                   
                   {profile.followers && profile.followers.length > 0 ? (
@@ -399,10 +383,13 @@ export default function EntrepreneurProfile() {
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium text-gray-800">{user.name}</p>
                             <p className="text-sm text-gray-500">@{user.username}</p>
                           </div>
+                          <Link href={`/entrepreneur/${user.username}`} className="text-xs text-orange-500 hover:text-orange-600 font-medium">
+                            View Profile
+                          </Link>
                         </div>
                       ))}
                     </div>
@@ -415,7 +402,7 @@ export default function EntrepreneurProfile() {
                 <div>
                   <div className="pb-2">
                     <h2 className="text-xl font-bold text-gray-800">Following</h2>
-                    <p className="text-gray-500 text-sm">People whose work you follow</p>
+                    <p className="text-gray-500 text-sm">Entrepreneurs you follow</p>
                   </div>
                   
                   {profile.followings && profile.followings.length > 0 ? (
@@ -429,10 +416,13 @@ export default function EntrepreneurProfile() {
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium text-gray-800">{user.name}</p>
                             <p className="text-sm text-gray-500">@{user.username}</p>
                           </div>
+                          <Link href={`/entrepreneur/${user.username}`} className="text-xs text-orange-500 hover:text-orange-600 font-medium">
+                            View Profile
+                          </Link>
                         </div>
                       ))}
                     </div>
@@ -441,11 +431,11 @@ export default function EntrepreneurProfile() {
                   )}
                 </div>
                 
-                {/* Mentors */}
+                {/* Mentor Colleagues */}
                 <div>
                   <div className="pb-2">
-                    <h2 className="text-xl font-bold text-gray-800">Mentors</h2>
-                    <p className="text-gray-500 text-sm">People mentoring you</p>
+                    <h2 className="text-xl font-bold text-gray-800">Mentor Colleagues</h2>
+                    <p className="text-gray-500 text-sm">Other mentors you follow</p>
                   </div>
                   
                   {profile.mentorFollowings && profile.mentorFollowings.length > 0 ? (
@@ -459,15 +449,19 @@ export default function EntrepreneurProfile() {
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium text-gray-800">{user.name}</p>
                             <p className="text-sm text-gray-500">@{user.username}</p>
                           </div>
+                          <div className="rounded-full bg-orange-100 text-orange-600 text-xs px-2 py-1">Mentor</div>
+                          <Link href={`/mentor/${user.username}`} className="text-xs text-orange-500 hover:text-orange-600 font-medium">
+                            View Profile
+                          </Link>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500 text-center py-4 mt-2">No mentors yet</p>
+                    <p className="text-gray-500 text-center py-4 mt-2">Not following any other mentors</p>
                   )}
                 </div>
                 
@@ -475,7 +469,7 @@ export default function EntrepreneurProfile() {
                 <div>
                   <div className="pb-2">
                     <h2 className="text-xl font-bold text-gray-800">Mentees</h2>
-                    <p className="text-gray-500 text-sm">People you're mentoring</p>
+                    <p className="text-gray-500 text-sm">Mentors you're guiding</p>
                   </div>
                   
                   {profile.mentorFollowers && profile.mentorFollowers.length > 0 ? (
@@ -489,10 +483,14 @@ export default function EntrepreneurProfile() {
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium text-gray-800">{user.name}</p>
                             <p className="text-sm text-gray-500">@{user.username}</p>
                           </div>
+                          <div className="rounded-full bg-orange-100 text-orange-600 text-xs px-2 py-1">Mentor</div>
+                          <Link href={`/mentor/${user.username}`} className="text-xs text-orange-500 hover:text-orange-600 font-medium">
+                            View Profile
+                          </Link>
                         </div>
                       ))}
                     </div>
