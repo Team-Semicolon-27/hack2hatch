@@ -69,71 +69,88 @@ export async function GET() {
   }
 }
 
-
+// ...existing code...
 
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    
     const session = await getServerSession(authOptions);
     const user = session?.user;
     
-    if (!session || !user ) {
-      return NextResponse.json({ error: "no user found" }, { status: 401});
+    if (!session || !user) {
+      return NextResponse.json({ error: "no user found" }, { status: 401 });
     }
-
-    console.log(session);
-    
     
     if (user.userType !== "entrepreneur") {
-      return NextResponse.json({ error: "user is not profile"}, { status: 401 })
+      return NextResponse.json({ error: "user is not profile" }, { status: 401 });
     }
     
     const userId = new mongoose.Types.ObjectId(user.id);
-    
     const { title, logo, description } = await req.json();
     
     if (!title || !logo || !description) {
       return NextResponse.json({ error: "Missing data" }, { status: 403 });
     }
-
-    const aiWrapperResponse = await aiWrapper(title,description);
     
+    const aiWrapperResponse = await aiWrapper(title, description);
     const notion = await NotionModel.create({
       owner: userId,
       title,
       logo,
       description,
       aiDescription: aiWrapperResponse
-    })
+    });
 
-    const aiSemanticSearcher = await aiBloggerModel.findById(new mongoose.Types.ObjectId("67dc91a0ee222e5f21f32daf"));
-    if (aiSemanticSearcher) {
-      aiSemanticSearcher.textToPassToAi = {
-        idOfNotion: notion._id as mongoose.Schema.Types.ObjectId,
-        text: `${aiSemanticSearcher.textToPassToAi.text} ${title} ${description}`
-      };
-      await aiSemanticSearcher.save();
-    }
     if (!notion) {
       return NextResponse.json({ error: "failed to create notions" }, { status: 500 });
     }
+
+    // Create or update the aiBlogger document
+    const notionKey = `notion_${Date.now()}`;
+    const aiSemanticSearcherId = new mongoose.Types.ObjectId("67dc91a0ee222e5f21f32daf");
     
-    await EntrepreneurModel.updateOne(
-      {
-        _id: userId,
+    const updateResult = await aiBloggerModel.findOneAndUpdate(
+      { _id: aiSemanticSearcherId },
+      { 
+        $set: {
+          [`textToPassToAi.${notionKey}`]: {
+            idOfNotion: notion._id,
+            text: `${title} ${description}`
+          }
+        }
       },
+      { 
+        upsert: true, // Create if doesn't exist
+        new: true // Return updated document
+      }
+    );
+
+    if (!updateResult) {
+      console.error('Failed to update aiBlogger');
+      return NextResponse.json({ error: "Failed to update search index" }, { status: 500 });
+    }
+
+    // Update the entrepreneur's notions
+    await EntrepreneurModel.updateOne(
+      { _id: userId },
       {
         $addToSet: {
           notionsOwnerOf: notion._id
         }
       }
-    )
-    return NextResponse.json({ status: 200 });
+    );
+    
+    return NextResponse.json({ 
+      success: true,
+      notion: notion,
+      searchIndex: updateResult
+    }, { status: 200 });
+    
   } catch (error) {
+    console.error('Error in POST /api/entrepreneur/notions:', error);
     return NextResponse.json(
-      { error: error },
+      { error: error instanceof Error ? error.message : 'Unknown error occurred' },
       { status: 500 }
-    )
+    );
   }
 }

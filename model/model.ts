@@ -233,20 +233,24 @@ const NewsSchema: Schema<News> = new Schema(
 
 export interface aiBlogger extends Document {
   textToPassToAi: {
-    idOfNotion: mongoose.Schema.Types.ObjectId;
-    text: string;
+    [key: string]: {
+      idOfNotion: mongoose.Schema.Types.ObjectId;
+      text: string;
+    };
   };
 }
 
 const aiBloggerSchema: Schema<aiBlogger> = new Schema(
   {
-    textToPassToAi:{
-      idOfNotion: { type: Schema.Types.ObjectId, ref: "Notion", required: true },
-      text: { type: String, required: true },
+    textToPassToAi: {
+      type: Map,
+      of: new Schema({
+        idOfNotion: { type: Schema.Types.ObjectId, ref: "Notion", required: true },
+        text: { type: String, required: true }
+      })
     }
   }
 )
-
 export const aiBloggerModel: Model<aiBlogger> =
   mongoose.models.aiBlogger || mongoose.model<aiBlogger>("aiBlogger", aiBloggerSchema);
 

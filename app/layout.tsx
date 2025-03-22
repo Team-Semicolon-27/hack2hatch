@@ -34,6 +34,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <FloatingChatbot />
+          <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
         </SessionProvider>
       </body>
     </html>
