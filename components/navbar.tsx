@@ -9,12 +9,8 @@ import { Menu, X, User, Search, Bell } from "lucide-react";
 export default function Navbar() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showSearchBar, setShowSearchBar] = useState(false);
 
   // Handle scroll effect
   useEffect(() => {
@@ -26,44 +22,8 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  async function handleSearch() {
-    if (!searchQuery.trim()) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/aiSemanticSearch`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query: searchQuery }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        if (data.notion) {
-          router.push(`/notions/${data.notion._id}`);
-        } else {
-          setError("No results found");
-        }
-      } else {
-        setError(data.error || "Error searching");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Error searching");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
+  const handleSearchRedirect = () => {
+    router.push("/search-notion");
   };
 
   if (status === "loading") {
@@ -102,43 +62,10 @@ export default function Navbar() {
 
             {/* Desktop Search and Profile */}
             <div className="hidden md:flex items-center space-x-2">
-              {/* Search Input */}
-              <div className="relative">
-                <div
-                  className={`flex items-center overflow-hidden transition-all duration-300 ${
-                    showSearchBar ? "w-64 border border-gray-300 rounded-full bg-gray-200/30" : "w-10"
-                  }`}
-                >
-                  {showSearchBar ? (
-                    <>
-                      <input
-                        type="text"
-                        placeholder="Search..."
-                        className="bg-transparent text-gray-700 outline-none px-4 py-2 w-full"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        autoFocus
-                      />
-                      <button
-                        onClick={() => setShowSearchBar(false)}
-                        className="p-2 text-gray-600 hover:text-[#FCA311]"
-                      >
-                        <X size={18} />
-                      </button>
-                    </>
-                  ) : (
-                    <button onClick={() => setShowSearchBar(true)} className="p-2 text-gray-600 hover:text-[#FCA311]">
-                      <Search size={18} />
-                    </button>
-                  )}
-                </div>
-                {error && showSearchBar && (
-                  <p className="absolute top-12 right-0 text-red-500 bg-white p-2 rounded shadow-md text-sm">
-                    {error}
-                  </p>
-                )}
-              </div>
+              {/* Search Button */}
+              <button onClick={handleSearchRedirect} className="p-2 text-gray-600 hover:text-[#FCA311] relative rounded-full hover:bg-gray-200">
+                <Search size={18} />
+              </button>
 
               {/* Notifications */}
               <button className="p-2 text-gray-600 hover:text-[#FCA311] relative rounded-full hover:bg-gray-200">
@@ -158,7 +85,7 @@ export default function Navbar() {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
-              <button onClick={() => setShowSearchBar(!showSearchBar)} className="p-2 text-gray-600 hover:text-[#FCA311]">
+              <button onClick={handleSearchRedirect} className="p-2 text-gray-600 hover:text-[#FCA311]">
                 <Search size={20} />
               </button>
               <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 text-gray-600 hover:text-[#FCA311]">
@@ -167,28 +94,6 @@ export default function Navbar() {
             </div>
           </div>
         </div>
-
-        {/* Mobile Search */}
-        {showSearchBar && (
-          <div className="md:hidden px-4 py-3 bg-white border-t border-gray-300">
-            <div className="relative">
-              <div className="flex items-center bg-gray-200/50 rounded-full overflow-hidden">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="bg-transparent text-gray-700 outline-none px-4 py-2 w-full"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  autoFocus
-                />
-                <button onClick={() => setShowSearchBar(false)} className="p-2 text-gray-600 hover:text-[#FCA311]">
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </nav>
 
       {/* Content padding to prevent overlap */}

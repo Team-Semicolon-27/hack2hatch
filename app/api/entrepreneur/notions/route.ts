@@ -69,8 +69,6 @@ export async function GET() {
   }
 }
 
-// ...existing code...
-
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
@@ -100,15 +98,16 @@ export async function POST(req: NextRequest) {
       description,
       aiDescription: aiWrapperResponse
     });
-
+    
     if (!notion) {
       return NextResponse.json({ error: "failed to create notions" }, { status: 500 });
     }
-
-    // Create or update the aiBlogger document
-    const notionKey = `notion_${Date.now()}`;
-    const aiSemanticSearcherId = new mongoose.Types.ObjectId("67dc91a0ee222e5f21f32daf");
     
+    // Keep using the original Map structure since that's what exists in the database
+    const aiSemanticSearcherId = new mongoose.Types.ObjectId("67de4b5426f6ffcc31bea548");
+    const notionKey = `notion_${Date.now()}`;
+    
+    // This uses the original Map structure format
     const updateResult = await aiBloggerModel.findOneAndUpdate(
       { _id: aiSemanticSearcherId },
       { 
@@ -120,16 +119,16 @@ export async function POST(req: NextRequest) {
         }
       },
       { 
-        upsert: true, // Create if doesn't exist
-        new: true // Return updated document
+        upsert: true,
+        new: true
       }
     );
-
+    
     if (!updateResult) {
       console.error('Failed to update aiBlogger');
       return NextResponse.json({ error: "Failed to update search index" }, { status: 500 });
     }
-
+    
     // Update the entrepreneur's notions
     await EntrepreneurModel.updateOne(
       { _id: userId },
