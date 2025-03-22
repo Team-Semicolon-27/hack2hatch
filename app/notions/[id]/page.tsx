@@ -109,7 +109,7 @@ export default function NotionDetailsPage() {
       return;
     }
   
-    router.push(`/notion/${id}/add-team-members`);
+    router.replace(`/notion/${id}/add-team-members`);
   };
   
   const handleDelete = async () => {
@@ -721,19 +721,19 @@ export default function NotionDetailsPage() {
                   onClick={() => router.push(`/chat/mentor/${id}`)}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                 >
-                  Chat with Mentor
+                  Chat with Mentors
                 </button>
                 <button
                   onClick={() => router.push(`/chat/teamMember/${id}`)}
                   className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                 >
-                  Chat with Team Member
+                  Chat with Team Members
                 </button>
               </div>
             )}
             {notion.isTeamMember && !notion.isOwner && (
               <button
-                onClick={() => router.push(`/chat/owner/${id}`)}
+                onClick={() => router.push(`/chat/teamMember/${id}`)}
                 className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
                 Chat with Owner
@@ -741,7 +741,7 @@ export default function NotionDetailsPage() {
             )}
             {notion.isMentor && !notion.isOwner && (
               <button
-                onClick={() => router.push(`/chat/owner-mentor/${id}`)}
+                onClick={() => router.push(`/chat/mentor/${id}`)}
                 className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
                 Chat with Owner
